@@ -1,160 +1,216 @@
-import { Badge, Button, Card, Input } from '@/components/ui';
+import { CategoryIcon } from '@/components/ui';
+import { useCategories } from '@/hooks/useCategories';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useTransactions } from '@/hooks/useTransactions';
-import { useAppStore } from '@/store';
-import type { TransactionType } from '@/types';
-import { formatCurrency, formatRelativeDate } from '@/utils/formatters';
-import { ArrowRightLeft, Filter, Plus, Search, TrendingDown, TrendingUp } from 'lucide-react';
+import type { Transaction, TransactionType } from '@/types';
+import { Receipt, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+type FilterType = 'all' | TransactionType;
+
 export const TransactionsPage = () => {
-  const { setActiveModal } = useAppStore();
+  const { formatCurrency } = useCurrency();
   const transactions = useTransactions();
+  const categories = useCategories();
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | TransactionType>('all');
+  const [filterType, setFilterType] = useState<FilterType>('all');
 
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((t) => {
-      const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase());
+  // Group transactions by date
+  const groupedTransactions = useMemo(() => {
+    const filtered = transactions.filter((t) => {
+      const matchesSearch = searchQuery === '' || 
+        t.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = filterType === 'all' || t.type === filterType;
       return matchesSearch && matchesType;
     });
+
+    // Sort by date descending
+    const sorted = [...filtered].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    // Group by date
+    const groups: { date: string; transactions: Transaction[] }[] = [];
+    let currentDate = '';
+    let currentGroup: Transaction[] = [];
+
+    sorted.forEach((t) => {
+      const dateStr = new Date(t.date).toDateString();
+      if (dateStr !== currentDate) {
+        if (currentGroup.length > 0) {
+          groups.push({ date: currentDate, transactions: currentGroup });
+        }
+        currentDate = dateStr;
+        currentGroup = [t];
+      } else {
+        currentGroup.push(t);
+      }
+    });
+
+    if (currentGroup.length > 0) {
+      groups.push({ date: currentDate, transactions: currentGroup });
+    }
+
+    return groups;
   }, [transactions, searchQuery, filterType]);
 
-  const getTransactionIcon = (type: TransactionType) => {
-    switch (type) {
-      case 'income':
-        return <TrendingUp className="w-5 h-5 text-success-400" />;
-      case 'expense':
-        return <TrendingDown className="w-5 h-5 text-danger-400" />;
-      case 'transfer':
-        return <ArrowRightLeft className="w-5 h-5 text-primary-400" />;
-      default:
-        return null;
-    }
+  const totalCount = useMemo(() => {
+    return transactions.filter((t) => {
+      const matchesSearch = searchQuery === '' || 
+        t.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = filterType === 'all' || t.type === filterType;
+      return matchesSearch && matchesType;
+    }).length;
+  }, [transactions, searchQuery, filterType]);
+
+  const getCategory = (categoryId?: string) => {
+    if (!categoryId) return null;
+    return categories.find(c => c.id === categoryId);
   };
 
-  const getTransactionColor = (type: TransactionType) => {
-    switch (type) {
-      case 'income':
-        return 'bg-success-500/20';
-      case 'expense':
-        return 'bg-danger-500/20';
-      case 'transfer':
-        return 'bg-primary-500/20';
-      default:
-        return 'bg-surface-700';
+  const formatDateHeader = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'long',
+        month: 'short', 
+        day: 'numeric' 
+      });
     }
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-surface-100">
-            Transactions
-          </h1>
-          <p className="text-surface-400 mt-1">
-            View and manage all your transactions
-          </p>
-        </div>
-        <Button 
-          leftIcon={<Plus className="w-4 h-4" />}
-          onClick={() => setActiveModal('add-transaction')}
-        >
-          Add Transaction
-        </Button>
+    <div className="min-h-full pb-6 animate-fade-in">
+      {/* Header */}
+      <div className="mb-5">
+        <h1 className="text-2xl font-bold text-surface-50 tracking-tight">Transactions</h1>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Search transactions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              leftIcon={<Search className="w-4 h-4" />}
-            />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {(['all', 'income', 'expense', 'transfer'] as const).map((type) => (
-              <Button
-                key={type}
-                variant={filterType === type ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => setFilterType(type)}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-            ))}
-            <Button variant="outline" size="sm" leftIcon={<Filter className="w-4 h-4" />}>
-              More
-            </Button>
-          </div>
-        </div>
-      </Card>
+      {/* Search Bar */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-surface-500" />
+        <input
+          type="text"
+          placeholder="Search transactions..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-surface-800/60 border border-surface-700/50 rounded-xl pl-11 pr-10 py-3 text-[15px] text-surface-100 placeholder:text-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500/50 transition-all"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-surface-500 hover:text-surface-300 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex gap-1 p-1 bg-surface-800/40 rounded-xl mb-5">
+        {(['all', 'expense', 'income'] as const).map((type) => (
+          <button
+            key={type}
+            onClick={() => setFilterType(type)}
+            className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all ${
+              filterType === type
+                ? 'bg-surface-700 text-surface-50 shadow-sm'
+                : 'text-surface-400 hover:text-surface-300'
+            }`}
+          >
+            {type === 'all' ? 'All' : type === 'expense' ? 'Expenses' : 'Income'}
+          </button>
+        ))}
+      </div>
 
       {/* Transactions List */}
-      <Card padding="none">
-        {filteredTransactions.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-surface-400 mb-4">No transactions found</p>
-            <Button
-              variant="outline"
-              leftIcon={<Plus className="w-4 h-4" />}
-              onClick={() => setActiveModal('add-transaction')}
-            >
-              Add your first transaction
-            </Button>
+      <div className="space-y-5">
+        {groupedTransactions.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-16 h-16 rounded-2xl bg-surface-800/50 flex items-center justify-center mx-auto mb-4">
+              <Receipt className="w-7 h-7 text-surface-600" />
+            </div>
+            <p className="text-surface-300 font-semibold text-[15px]">No transactions</p>
+            <p className="text-surface-500 text-[13px] mt-1.5">
+              {searchQuery ? 'Try a different search' : 'Add your first transaction'}
+            </p>
           </div>
         ) : (
-          <div className="divide-y divide-surface-800">
-            {filteredTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between p-4 hover:bg-surface-800/50 transition-colors duration-200 cursor-pointer"
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getTransactionColor(transaction.type)}`}>
-                    {getTransactionIcon(transaction.type)}
-                  </div>
-                  <div>
-                    <p className="font-medium text-surface-100">
-                      {transaction.description || 'Transaction'}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <Badge 
-                        size="sm" 
-                        variant={transaction.type === 'income' ? 'success' : transaction.type === 'expense' ? 'danger' : 'info'}
+          groupedTransactions.map((group) => (
+            <section key={group.date}>
+              {/* Date Header */}
+              <h2 className="text-surface-500 text-[13px] font-semibold mb-2.5 px-0.5">
+                {formatDateHeader(group.date)}
+              </h2>
+
+              {/* Transaction Cards */}
+              <div className="space-y-2">
+                {group.transactions.map((transaction) => {
+                  const category = getCategory(transaction.categoryId);
+                  const isExpense = transaction.type === 'expense';
+                  const isIncome = transaction.type === 'income';
+
+                  return (
+                    <div
+                      key={transaction.id}
+                      className="flex items-center gap-3.5 bg-surface-800/40 border border-surface-700/30 rounded-2xl p-4 active:scale-[0.98] transition-transform"
+                    >
+                      {/* Category Icon */}
+                      <div 
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: (category?.color || '#6b7280') + '18' }}
                       >
-                        {transaction.type}
-                      </Badge>
+                        <CategoryIcon 
+                          icon={category?.icon || 'more-horizontal'} 
+                          color={category?.color} 
+                          size="md"
+                        />
+                      </div>
+
+                      {/* Transaction Details */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-surface-100 text-[15px] font-semibold truncate leading-tight">
+                          {transaction.description || category?.name || 'Transaction'}
+                        </p>
+                        <p className="text-surface-500 text-[13px] mt-0.5">
+                          {category?.name || 'Uncategorized'}
+                        </p>
+                      </div>
+
+                      {/* Amount */}
+                      <div className="shrink-0 text-right">
+                        <p className={`font-bold font-amount text-[16px] ${
+                          isExpense ? 'text-danger-400' : 
+                          isIncome ? 'text-success-400' : 
+                          'text-primary-400'
+                        }`}>
+                          {isExpense ? '−' : isIncome ? '+' : ''}{formatCurrency(Math.abs(transaction.amount))}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p
-                    className={`font-semibold font-amount ${
-                      transaction.type === 'income'
-                        ? 'text-success-400'
-                        : transaction.type === 'expense'
-                          ? 'text-danger-400'
-                          : 'text-surface-400'
-                    }`}
-                  >
-                    {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
-                  </p>
-                  <p className="text-sm text-surface-400">
-                    {formatRelativeDate(transaction.date)}
-                  </p>
-                </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
+            </section>
+          ))
         )}
-      </Card>
+      </div>
+
+      {/* Footer count */}
+      {totalCount > 0 && (
+        <p className="text-center text-surface-600 text-[12px] mt-8">
+          Showing {totalCount} transaction{totalCount !== 1 ? 's' : ''}
+        </p>
+      )}
     </div>
   );
 };

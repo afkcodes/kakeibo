@@ -7,6 +7,7 @@ import { useAppStore } from '@/store';
 import { Outlet } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { BottomNav } from '../BottomNav';
+import { FloatingActionButton } from '../FloatingActionButton';
 import { Navbar } from '../Navbar';
 import { Sidebar } from '../Sidebar';
 
@@ -53,11 +54,11 @@ export const AppShell = () => {
           sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'
         }`}
       >
-        {/* Top Navbar */}
-        <Navbar />
+        {/* Top Navbar - Desktop only */}
+        <Navbar className="hidden lg:flex" />
 
         {/* Page Content */}
-        <main className="px-4 py-6 pb-24 lg:pb-6 sm:px-6 lg:px-8">
+        <main className="px-4 py-4 pb-24 lg:py-6 lg:pb-6 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <Outlet />
           </div>
@@ -66,6 +67,9 @@ export const AppShell = () => {
 
       {/* Mobile Bottom Navigation */}
       <BottomNav />
+
+      {/* Floating Action Button - Mobile only */}
+      <FloatingActionButton />
 
       {/* Modals */}
       <AddTransactionModal

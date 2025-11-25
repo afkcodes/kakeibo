@@ -1,11 +1,13 @@
 import { Badge, Button, Card, ProgressBar } from '@/components/ui';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useGoalProgress } from '@/hooks/useGoals';
 import { useAppStore } from '@/store';
-import { formatCurrency, formatDate } from '@/utils/formatters';
+import { formatDate } from '@/utils/formatters';
 import { Calendar, Plus, Target, TrendingUp } from 'lucide-react';
 
 export const GoalsPage = () => {
   const { setActiveModal, currentUserId } = useAppStore();
+  const { formatCurrency } = useCurrency();
   const goalProgress = useGoalProgress(currentUserId ?? undefined);
 
   const activeGoals = goalProgress.filter(gp => gp.goal.status === 'active');

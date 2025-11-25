@@ -58,25 +58,84 @@ export const useCategoryActions = () => {
   };
 
   const initializeDefaultCategories = async (userId: string) => {
-    const existing = await db.categories.where('userId').equals(userId).count();
-    if (existing > 0) return;
+    // First, clean up any duplicate categories
+    const allCategories = await db.categories.where('userId').equals(userId).toArray();
+    
+    // Find duplicates by name and type
+    const seen = new Map<string, string>();
+    const duplicateIds: string[] = [];
+    
+    for (const cat of allCategories) {
+      const key = `${cat.type}-${cat.name}`;
+      if (seen.has(key)) {
+        duplicateIds.push(cat.id);
+      } else {
+        seen.set(key, cat.id);
+      }
+    }
+    
+    // Remove duplicates
+    if (duplicateIds.length > 0) {
+      await db.categories.bulkDelete(duplicateIds);
+    }
 
+    // Check if categories already exist for this user (after cleanup)
+    const existing = await db.categories.where('userId').equals(userId).toArray();
+    
+    // Create a map of default categories for icon/color updates
+    const defaultCatMap = new Map<string, { icon: string; color: string; name: string }>();
+    [...defaultExpenseCategories, ...defaultIncomeCategories].forEach(c => {
+      // Map by old names too for migration
+      const oldNames: Record<string, string> = {
+        'food': 'food & dining',
+        'transport': 'transportation', 
+        'bills': 'bills & utilities',
+        'health': 'healthcare',
+        'rent': 'housing',
+        'personal': 'personal care',
+        'rental': 'rental income',
+      };
+      defaultCatMap.set(`${c.type}-${c.name.toLowerCase()}`, { icon: c.icon, color: c.color, name: c.name });
+      // Also add old name mappings
+      const newNameLower = c.name.toLowerCase();
+      if (oldNames[newNameLower]) {
+        defaultCatMap.set(`${c.type}-${oldNames[newNameLower]}`, { icon: c.icon, color: c.color, name: c.name });
+      }
+    });
+
+    // Update existing categories with correct icons/colors
+    for (const cat of existing) {
+      const key = `${cat.type}-${cat.name.toLowerCase()}`;
+      const defaultCat = defaultCatMap.get(key);
+      if (defaultCat && cat.isDefault) {
+        // Update icon and color to match defaults, also update name if it changed
+        await db.categories.update(cat.id, { 
+          icon: defaultCat.icon, 
+          color: defaultCat.color,
+          name: defaultCat.name 
+        });
+      }
+    }
+
+    if (existing.length > 0) return;
+
+    // Create default categories with deterministic IDs
     const categories: Category[] = [
       ...defaultExpenseCategories.map((c, i) => ({
         ...c,
-        id: generateId(),
+        id: `${userId}-${c.type}-${c.name.toLowerCase().replace(/\s+/g, '-')}`,
         userId,
         order: i + 1,
       })),
       ...defaultIncomeCategories.map((c, i) => ({
         ...c,
-        id: generateId(),
+        id: `${userId}-${c.type}-${c.name.toLowerCase().replace(/\s+/g, '-')}`,
         userId,
         order: defaultExpenseCategories.length + i + 1,
       })),
     ];
 
-    await db.categories.bulkAdd(categories);
+    await db.categories.bulkPut(categories);
     return categories;
   };
 

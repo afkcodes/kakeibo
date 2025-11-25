@@ -1,8 +1,13 @@
 import { Button } from '@/components/ui';
 import { useAppStore } from '@/store';
+import { cn } from '@/utils/cn';
 import { Bell, Menu, Moon, Search, Sun } from 'lucide-react';
 
-export const Navbar = () => {
+interface NavbarProps {
+  className?: string;
+}
+
+export const Navbar = ({ className }: NavbarProps) => {
   const { theme, setTheme, toggleSidebar } = useAppStore();
 
   const handleThemeToggle = () => {
@@ -10,7 +15,7 @@ export const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-30 glass border-b border-surface-700/50">
+    <header className={cn("sticky top-0 z-30 glass border-b border-surface-700/50", className)}>
       <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
         {/* Left Section */}
         <div className="flex items-center gap-4">
@@ -60,7 +65,7 @@ export const Navbar = () => {
           </Button>
 
           {/* User Avatar */}
-          <button className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center ml-2 shadow-lg shadow-primary-500/20">
+          <button className="w-9 h-9 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center ml-2 shadow-lg shadow-primary-500/20">
             <span className="text-sm font-semibold text-white">
               AK
             </span>

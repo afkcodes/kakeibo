@@ -3,7 +3,7 @@ import { useAccountActions } from '@/hooks/useAccounts';
 import { useAppStore } from '@/store';
 import type { AccountType } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const accountSchema = z.object({
@@ -46,6 +46,7 @@ export const AddAccountModal = () => {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<AccountFormData>({
     resolver: zodResolver(accountSchema),
@@ -89,11 +90,18 @@ export const AddAccountModal = () => {
           error={errors.name?.message}
         />
 
-        <Select
-          label="Account Type"
-          options={typeOptions}
-          {...register('type')}
-          error={errors.type?.message}
+        <Controller
+          name="type"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Account Type"
+              options={typeOptions}
+              value={field.value}
+              onValueChange={field.onChange}
+              error={errors.type?.message}
+            />
+          )}
         />
 
         <Input
@@ -106,11 +114,18 @@ export const AddAccountModal = () => {
           helperText="For credit cards, enter negative balance if you owe money"
         />
 
-        <Select
-          label="Color"
-          options={colorOptions}
-          {...register('color')}
-          error={errors.color?.message}
+        <Controller
+          name="color"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Color"
+              options={colorOptions}
+              value={field.value}
+              onValueChange={field.onChange}
+              error={errors.color?.message}
+            />
+          )}
         />
 
         <div className="flex gap-3 pt-4">

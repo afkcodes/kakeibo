@@ -97,13 +97,13 @@ export const SettingsPage = () => {
               label="Currency"
               options={currencyOptions}
               value={settings.currency}
-              onChange={(e) => updateSettings({ currency: e.target.value })}
+              onValueChange={(value) => updateSettings({ currency: value })}
             />
             <Select
               label="Date Format"
               options={dateFormatOptions}
               value={settings.dateFormat}
-              onChange={(e) => updateSettings({ dateFormat: e.target.value })}
+              onValueChange={(value) => updateSettings({ dateFormat: value })}
             />
           </div>
         </CardContent>

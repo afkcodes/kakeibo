@@ -1,4 +1,5 @@
 import { Button, Input, Modal, Select } from '@/components/ui';
+import { CategorySelect } from '@/components/ui/CategorySelect/CategorySelect';
 import { useAccounts, useCategories, useTransactionActions } from '@/hooks';
 import { useAppStore } from '@/store';
 import type { TransactionType } from '@/types';
@@ -168,7 +169,8 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
               options={accounts.map((a) => ({ value: a.id, label: a.name }))}
               placeholder="Select account"
               error={errors.accountId?.message}
-              {...field}
+              value={field.value}
+              onValueChange={field.onChange}
             />
           )}
         />
@@ -185,7 +187,8 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
                   .filter((a) => a.id !== watch('accountId'))
                   .map((a) => ({ value: a.id, label: a.name }))}
                 placeholder="Select destination account"
-                {...field}
+                value={field.value || ''}
+                onValueChange={field.onChange}
               />
             )}
           />
@@ -197,15 +200,18 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
             name="categoryId"
             control={control}
             render={({ field }) => (
-              <Select
+              <CategorySelect
                 label="Category"
                 options={filteredCategories.map((c) => ({
                   value: c.id,
                   label: c.name,
+                  icon: c.icon,
+                  color: c.color,
                 }))}
                 placeholder="Select category"
                 error={errors.categoryId?.message}
-                {...field}
+                value={field.value}
+                onValueChange={field.onChange}
               />
             )}
           />

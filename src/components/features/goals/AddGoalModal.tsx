@@ -4,7 +4,7 @@ import { useGoalActions } from '@/hooks/useGoals';
 import { useAppStore } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const goalSchema = z.object({
@@ -40,6 +40,7 @@ export const AddGoalModal = () => {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<GoalFormData>({
     resolver: zodResolver(goalSchema),
@@ -94,11 +95,18 @@ export const AddGoalModal = () => {
           error={errors.name?.message}
         />
 
-        <Select
-          label="Goal Type"
-          options={typeOptions}
-          {...register('type')}
-          error={errors.type?.message}
+        <Controller
+          name="type"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Goal Type"
+              options={typeOptions}
+              value={field.value}
+              onValueChange={field.onChange}
+              error={errors.type?.message}
+            />
+          )}
         />
 
         <div className="grid grid-cols-2 gap-4">
@@ -129,19 +137,33 @@ export const AddGoalModal = () => {
         />
 
         {accountOptions.length > 0 && (
-          <Select
-            label="Link to Account (optional)"
-            options={[{ value: '', label: 'None' }, ...accountOptions]}
-            {...register('accountId')}
-            error={errors.accountId?.message}
+          <Controller
+            name="accountId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label="Link to Account (optional)"
+                options={[{ value: '', label: 'None' }, ...accountOptions]}
+                value={field.value || ''}
+                onValueChange={field.onChange}
+                error={errors.accountId?.message}
+              />
+            )}
           />
         )}
 
-        <Select
-          label="Color"
-          options={colorOptions}
-          {...register('color')}
-          error={errors.color?.message}
+        <Controller
+          name="color"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Color"
+              options={colorOptions}
+              value={field.value || ''}
+              onValueChange={field.onChange}
+              error={errors.color?.message}
+            />
+          )}
         />
 
         <div className="flex gap-3 pt-4">

@@ -1,10 +1,11 @@
 import { Button, Input, Modal, Select } from '@/components/ui';
+import { CategorySelect } from '@/components/ui/CategorySelect/CategorySelect';
 import { useBudgetActions } from '@/hooks/useBudgets';
 import { useCategories } from '@/hooks/useCategories';
 import { useAppStore } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const budgetSchema = z.object({
@@ -27,6 +28,7 @@ export const AddBudgetModal = () => {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<BudgetFormData>({
     resolver: zodResolver(budgetSchema),
@@ -73,7 +75,9 @@ export const AddBudgetModal = () => {
       .filter(c => c.type === 'expense')
       .map(c => ({
         value: c.id,
-        label: `${c.icon} ${c.name}`,
+        label: c.name,
+        icon: c.icon,
+        color: c.color,
       }));
   }, [categories]);
 
@@ -86,12 +90,19 @@ export const AddBudgetModal = () => {
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Create Budget">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Select
-          label="Category"
-          options={categoryOptions}
-          placeholder="Select a category"
-          {...register('categoryId')}
-          error={errors.categoryId?.message}
+        <Controller
+          name="categoryId"
+          control={control}
+          render={({ field }) => (
+            <CategorySelect
+              label="Category"
+              options={categoryOptions}
+              placeholder="Select a category"
+              value={field.value}
+              onValueChange={field.onChange}
+              error={errors.categoryId?.message}
+            />
+          )}
         />
 
         <Input
@@ -103,11 +114,18 @@ export const AddBudgetModal = () => {
           error={errors.amount?.message}
         />
 
-        <Select
-          label="Period"
-          options={periodOptions}
-          {...register('period')}
-          error={errors.period?.message}
+        <Controller
+          name="period"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Period"
+              options={periodOptions}
+              value={field.value}
+              onValueChange={field.onChange}
+              error={errors.period?.message}
+            />
+          )}
         />
 
         <div className="flex items-center gap-2">

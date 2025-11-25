@@ -64,9 +64,9 @@
   --color-surface-950: #09090b;
 
   /* Fonts */
-  --font-sans: "Inter", "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, sans-serif;
-  --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
     Consolas, monospace;
 
   /* Shadows for depth */
@@ -167,11 +167,66 @@ body {
   background: #52525b;
 }
 
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Number/Amount styling */
 .font-amount {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+}
+
+/* Recharts - Remove focus outlines on tap */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper svg,
+.recharts-sector,
+.recharts-bar-rectangle,
+.recharts-area,
+.recharts-line,
+.recharts-pie,
+.recharts-pie-sector,
+.recharts-layer,
+.recharts-active-shape {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus,
+.recharts-surface:focus-visible,
+.recharts-sector:focus,
+.recharts-bar-rectangle:focus,
+.recharts-wrapper *:focus,
+.recharts-wrapper *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove blue highlight on touch for charts */
+.recharts-responsive-container,
+.recharts-responsive-container * {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+
+/* SVG elements inside charts */
+.recharts-wrapper svg:focus,
+.recharts-wrapper path:focus,
+.recharts-wrapper rect:focus,
+.recharts-wrapper circle:focus {
+  outline: none !important;
 }
 
 /* Safe area padding for mobile */

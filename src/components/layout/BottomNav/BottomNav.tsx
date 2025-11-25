@@ -1,4 +1,3 @@
-import { useAppStore } from '@/store';
 import { cn } from '@/utils/cn';
 import { Link, useLocation } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
@@ -7,20 +6,19 @@ import {
   BarChart3,
   LayoutDashboard,
   PiggyBank,
-  Plus,
+  Wallet,
 } from 'lucide-react';
 
 const navigationItems = [
   { path: '/', label: 'Home', icon: LayoutDashboard },
   { path: '/transactions', label: 'Transactions', icon: ArrowRightLeft },
-  { path: '/add', label: 'Add', icon: Plus, isAction: true },
   { path: '/budgets', label: 'Budgets', icon: PiggyBank },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { path: '/accounts', label: 'Accounts', icon: Wallet },
 ];
 
 export const BottomNav = () => {
   const location = useLocation();
-  const { setActiveModal } = useAppStore();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
@@ -29,20 +27,6 @@ export const BottomNav = () => {
           {navigationItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
-
-            if (item.isAction) {
-              return (
-                <button
-                  key={item.path}
-                  className="flex items-center justify-center -mt-6"
-                  onClick={() => setActiveModal('add-transaction')}
-                >
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 hover:from-primary-500 hover:to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/30 transition-all duration-200 active:scale-95">
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                </button>
-              );
-            }
 
             return (
               <Link

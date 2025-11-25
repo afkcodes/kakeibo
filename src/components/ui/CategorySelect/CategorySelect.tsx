@@ -1,29 +1,31 @@
+import { CategoryIcon } from '@/components/ui/CategoryIcon/CategoryIcon';
 import { cn } from '@/utils/cn';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import { forwardRef } from 'react';
 
-export interface SelectOption {
+export interface CategoryOption {
   value: string;
   label: string;
+  icon?: string;
+  color?: string;
   disabled?: boolean;
 }
 
-export interface SelectProps {
+export interface CategorySelectProps {
   label?: string;
   error?: string;
   helperText?: string;
-  options: SelectOption[];
+  options: CategoryOption[];
   placeholder?: string;
   value?: string;
-  defaultValue?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
   className?: string;
   name?: string;
 }
 
-const Select = forwardRef<HTMLButtonElement, SelectProps>(
+const CategorySelect = forwardRef<HTMLButtonElement, CategorySelectProps>(
   (
     {
       className,
@@ -33,13 +35,14 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
       options,
       placeholder = 'Select...',
       value,
-      defaultValue,
       onValueChange,
       disabled,
       name,
     },
     ref
   ) => {
+    const selectedOption = options.find(opt => opt.value === value);
+
     return (
       <div className="w-full">
         {label && (
@@ -50,7 +53,6 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
         
         <SelectPrimitive.Root 
           value={value} 
-          defaultValue={defaultValue}
           onValueChange={onValueChange}
           disabled={disabled}
           name={name}
@@ -67,7 +69,21 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
               className
             )}
           >
-            <SelectPrimitive.Value placeholder={placeholder} className="text-surface-100" />
+            <span className="flex items-center gap-2.5 min-w-0">
+              {selectedOption?.icon && (
+                <span 
+                  className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: (selectedOption.color || '#6b7280') + '20' }}
+                >
+                  <CategoryIcon 
+                    icon={selectedOption.icon} 
+                    color={selectedOption.color} 
+                    size="sm" 
+                  />
+                </span>
+              )}
+              <SelectPrimitive.Value placeholder={placeholder} />
+            </span>
             <SelectPrimitive.Icon>
               <ChevronDown className="h-4 w-4 text-surface-500 shrink-0" />
             </SelectPrimitive.Icon>
@@ -90,16 +106,28 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
                     value={option.value}
                     disabled={option.disabled}
                     className={cn(
-                      'flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm cursor-pointer select-none outline-none',
+                      'flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm cursor-pointer select-none outline-none',
                       'text-surface-200',
                       'data-highlighted:bg-surface-700/50 data-highlighted:text-surface-50',
                       'data-disabled:opacity-50 data-disabled:pointer-events-none'
                     )}
                   >
-                    <SelectPrimitive.ItemText className="flex-1">
+                    {option.icon && (
+                      <span 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: (option.color || '#6b7280') + '20' }}
+                      >
+                        <CategoryIcon 
+                          icon={option.icon} 
+                          color={option.color} 
+                          size="sm" 
+                        />
+                      </span>
+                    )}
+                    <SelectPrimitive.ItemText className="flex-1 truncate">
                       {option.label}
                     </SelectPrimitive.ItemText>
-                    <SelectPrimitive.ItemIndicator className="shrink-0">
+                    <SelectPrimitive.ItemIndicator className="shrink-0 ml-auto">
                       <Check className="h-4 w-4 text-primary-400" />
                     </SelectPrimitive.ItemIndicator>
                   </SelectPrimitive.Item>
@@ -124,6 +152,6 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
   }
 );
 
-Select.displayName = 'Select';
+CategorySelect.displayName = 'CategorySelect';
 
-export { Select };
+export { CategorySelect };
