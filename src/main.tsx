@@ -6,7 +6,7 @@ import { router } from './router'
 
 // Apply theme from localStorage on initial load
 const applyTheme = () => {
-  const stored = localStorage.getItem('budgeto-app-store')
+  const stored = localStorage.getItem('kakeibo-app-store')
   if (stored) {
     const parsed = JSON.parse(stored)
     const theme = parsed.state?.theme

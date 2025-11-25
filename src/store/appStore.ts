@@ -62,7 +62,7 @@ export const useAppStore = create<AppState>()(
       setActiveModal: (modal) => set({ activeModal: modal }),
     }),
     {
-      name: 'budgeto-app-store',
+      name: 'kakeibo-app-store',
       partialize: (state) => ({
         settings: state.settings,
         theme: state.theme,

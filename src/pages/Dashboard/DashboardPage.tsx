@@ -10,16 +10,16 @@ import type { Account, Transaction } from '@/types';
 import { formatRelativeDate } from '@/utils/formatters';
 import { Link } from '@tanstack/react-router';
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  ChevronRight,
-  CreditCard,
-  Eye,
-  EyeOff,
-  Settings,
-  Sparkles,
-  Target,
-  Wallet
+    ArrowDownLeft,
+    ArrowUpRight,
+    ChevronRight,
+    CreditCard,
+    Eye,
+    EyeOff,
+    Settings,
+    Sparkles,
+    Target,
+    Wallet
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -103,7 +103,7 @@ export const DashboardPage = () => {
       {/* Top Header - User & Settings */}
       <div className="flex items-center justify-between">
         <img 
-          src="https://api.dicebear.com/9.x/notionists/svg?seed=budgeto&backgroundColor=b6e3f4" 
+          src="https://api.dicebear.com/9.x/notionists/svg?seed=kakeibo&backgroundColor=b6e3f4" 
           alt="User" 
           className="w-10 h-10 rounded-full bg-surface-700"
         />
@@ -412,7 +412,7 @@ export const DashboardPage = () => {
           <div className="w-14 h-14 rounded-full bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
             <Sparkles className="w-7 h-7 text-primary-400" />
           </div>
-          <h3 className="text-surface-100 font-semibold text-[15px] mb-1.5">Welcome to Budgeto!</h3>
+          <h3 className="text-surface-100 font-semibold text-[15px] mb-1.5">Welcome to Kakeibo!</h3>
           <p className="text-surface-500 text-[13px] mb-4">
             Get started by adding your first account
           </p>

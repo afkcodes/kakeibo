@@ -3,15 +3,15 @@ import { cn } from '@/utils/cn';
 import { Link, useLocation } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import {
-    ArrowRightLeft,
-    BarChart3,
-    ChevronLeft,
-    ChevronRight,
-    LayoutDashboard,
-    PiggyBank,
-    Settings,
-    Target,
-    Wallet,
+  ArrowRightLeft,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
+  PiggyBank,
+  Settings,
+  Target,
+  Wallet,
 } from 'lucide-react';
 
 const navigationItems = [
@@ -51,7 +51,7 @@ export const Sidebar = () => {
                 animate={{ opacity: 1 }}
                 className="text-xl font-bold text-white"
               >
-                Budgeto
+                Kakeibo
               </motion.span>
             )}
           </Link>

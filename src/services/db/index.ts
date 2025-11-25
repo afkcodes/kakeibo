@@ -7,7 +7,7 @@ import type { User } from '@/types/user';
 import Dexie, { type EntityTable } from 'dexie';
 
 // Define the database
-class BudgetoDatabase extends Dexie {
+class KakeiboDatabase extends Dexie {
   users!: EntityTable<User, 'id'>;
   accounts!: EntityTable<Account, 'id'>;
   categories!: EntityTable<Category, 'id'>;
@@ -16,7 +16,7 @@ class BudgetoDatabase extends Dexie {
   goals!: EntityTable<Goal, 'id'>;
 
   constructor() {
-    super('BudgetoDB');
+    super('KakeiboDB');
 
     this.version(1).stores({
       users: 'id, email',
@@ -30,7 +30,7 @@ class BudgetoDatabase extends Dexie {
 }
 
 // Create and export the database instance
-export const db = new BudgetoDatabase();
+export const db = new KakeiboDatabase();
 
 // Helper function to generate unique IDs
 export const generateId = (): string => {

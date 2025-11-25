@@ -1,20 +1,24 @@
-import { Button } from '@/components/ui';
-import { useAccountStats, useAccountsWithBalance } from '@/hooks/useAccounts';
+import { Button, Input, Modal, Select } from '@/components/ui';
+import { useAccountActions, useAccountStats, useAccountsWithBalance } from '@/hooks/useAccounts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useAppStore } from '@/store';
-import type { AccountType } from '@/types';
+import type { Account, AccountType } from '@/types';
 import {
+    AlertTriangle,
     ArrowDownRight,
+    ArrowLeftRight,
     ArrowUpRight,
     Banknote,
     Building2,
     CreditCard,
     MoreHorizontal,
+    Pencil,
     Plus,
+    Trash2,
     TrendingUp,
     Wallet,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 const getAccountIcon = (type: AccountType) => {
   switch (type) {
@@ -46,11 +50,57 @@ const getAccountTypeLabel = (type: AccountType) => {
   }
 };
 
+const typeOptions = [
+  { value: 'bank', label: '🏦 Bank Account' },
+  { value: 'credit', label: '💳 Credit Card' },
+  { value: 'cash', label: '💵 Cash' },
+  { value: 'investment', label: '📈 Investment' },
+  { value: 'wallet', label: '👛 Digital Wallet' },
+];
+
+const colorOptions = [
+  { value: '#3b82f6', label: '🔵 Blue' },
+  { value: '#10b981', label: '🟢 Green' },
+  { value: '#f59e0b', label: '🟡 Yellow' },
+  { value: '#ef4444', label: '🔴 Red' },
+  { value: '#8b5cf6', label: '🟣 Purple' },
+  { value: '#ec4899', label: '💗 Pink' },
+  { value: '#06b6d4', label: '🩵 Cyan' },
+  { value: '#6b7280', label: '⚫ Gray' },
+];
+
 export const AccountsPage = () => {
   const { currentUserId, setActiveModal } = useAppStore();
   const { formatCurrency } = useCurrency();
   const accounts = useAccountsWithBalance(currentUserId ?? undefined);
   const stats = useAccountStats(currentUserId ?? undefined);
+  const { deleteAccount, updateAccount } = useAccountActions();
+
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState<Account | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Edit form state
+  const [editName, setEditName] = useState('');
+  const [editType, setEditType] = useState<AccountType>('bank');
+  const [editBalance, setEditBalance] = useState('0');
+  const [editColor, setEditColor] = useState('#3b82f6');
+  
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const totalAssets = stats?.totalAssets ?? 0;
   const totalLiabilities = stats?.totalLiabilities ?? 0;
@@ -78,7 +128,73 @@ export const AccountsPage = () => {
   // Calculate percentage of net worth for assets vs liabilities
   const assetsPercentage = totalAssets > 0 ? (totalAssets / (totalAssets + Math.abs(totalLiabilities))) * 100 : 0;
 
+  const handleOpenEditModal = (account: Account) => {
+    setEditingAccount(account);
+    setEditName(account.name);
+    setEditType(account.type);
+    setEditBalance(account.balance.toString());
+    setEditColor(account.color);
+    setOpenMenuId(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingAccount(null);
+    setEditName('');
+    setEditType('bank');
+    setEditBalance('0');
+    setEditColor('#3b82f6');
+  };
+
+  const handleUpdateAccount = async () => {
+    if (!editingAccount) return;
+    
+    setIsUpdating(true);
+    try {
+      await updateAccount(editingAccount.id, {
+        name: editName,
+        type: editType,
+        balance: parseFloat(editBalance) || 0,
+        color: editColor,
+      });
+      handleCloseEditModal();
+    } catch (error) {
+      console.error('Failed to update account:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleOpenDeleteModal = (account: Account) => {
+    setDeletingAccount(account);
+    setOpenMenuId(null);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeletingAccount(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingAccount) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteAccount(deletingAccount.id);
+      handleCloseDeleteModal();
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleTransferToAccount = (_accountId: string) => {
+    // TODO: Open transfer modal with this account pre-selected as destination
+    setActiveModal('add-transaction');
+    setOpenMenuId(null);
+  };
+
   return (
+    <>
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
       <div>
@@ -266,15 +382,46 @@ export const AccountsPage = () => {
                         <p className="text-xs text-surface-400">Outstanding</p>
                       )}
                     </div>
-                    <button
-                      className="p-2 rounded-lg hover:bg-surface-700/50 text-surface-400 hover:text-surface-200 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // TODO: Open account options menu
-                      }}
-                    >
-                      <MoreHorizontal className="w-5 h-5" />
-                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    <div className="relative" ref={openMenuId === account.id ? menuRef : null}>
+                      <button
+                        className="p-2 rounded-lg hover:bg-surface-700/50 text-surface-400 hover:text-surface-200 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(openMenuId === account.id ? null : account.id);
+                        }}
+                      >
+                        <MoreHorizontal className="w-5 h-5" />
+                      </button>
+                      
+                      {openMenuId === account.id && (
+                        <div className="absolute right-0 top-full mt-1 w-44 bg-surface-800 border border-surface-700 rounded-xl shadow-xl z-50 py-1 overflow-hidden">
+                          <button
+                            className="w-full px-4 py-2.5 text-left text-sm text-surface-200 hover:bg-surface-700/50 flex items-center gap-3 transition-colors"
+                            onClick={() => handleTransferToAccount(account.id)}
+                          >
+                            <ArrowLeftRight className="w-4 h-4 text-surface-400" />
+                            Transfer
+                          </button>
+                          <button
+                            className="w-full px-4 py-2.5 text-left text-sm text-surface-200 hover:bg-surface-700/50 flex items-center gap-3 transition-colors"
+                            onClick={() => handleOpenEditModal(account)}
+                          >
+                            <Pencil className="w-4 h-4 text-surface-400" />
+                            Edit Account
+                          </button>
+                          <div className="h-px bg-surface-700 my-1" />
+                          <button
+                            className="w-full px-4 py-2.5 text-left text-sm text-danger-400 hover:bg-danger-500/10 flex items-center gap-3 transition-colors"
+                            onClick={() => handleOpenDeleteModal(account)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete Account
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -318,5 +465,114 @@ export const AccountsPage = () => {
         </div>
       )}
     </div>
+
+    {/* Edit Account Modal */}
+    <Modal
+      isOpen={!!editingAccount}
+      onClose={handleCloseEditModal}
+      title="Edit Account"
+      size="md"
+    >
+      <div className="space-y-4">
+        <Input
+          label="Account Name"
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          placeholder="e.g., Main Checking, Savings"
+        />
+
+        <Select
+          label="Account Type"
+          options={typeOptions}
+          value={editType}
+          onValueChange={(value) => setEditType(value as AccountType)}
+        />
+
+        <Input
+          label="Current Balance"
+          type="number"
+          step="0.01"
+          value={editBalance}
+          onChange={(e) => setEditBalance(e.target.value)}
+          placeholder="0.00"
+        />
+
+        <Select
+          label="Color"
+          options={colorOptions}
+          value={editColor}
+          onValueChange={setEditColor}
+        />
+
+        <div className="flex gap-3 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            onClick={handleCloseEditModal}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            className="flex-1"
+            onClick={handleUpdateAccount}
+            disabled={isUpdating || !editName.trim()}
+          >
+            {isUpdating ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+
+    {/* Delete Confirmation Modal */}
+    <Modal
+      isOpen={!!deletingAccount}
+      onClose={handleCloseDeleteModal}
+      title="Delete Account"
+      size="sm"
+    >
+      <div className="space-y-4">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-danger-500/20 rounded-xl shrink-0">
+            <AlertTriangle className="w-6 h-6 text-danger-400" />
+          </div>
+          <div>
+            <p className="text-surface-200">
+              Are you sure you want to delete{' '}
+              <span className="font-semibold text-surface-50">
+                {deletingAccount?.name}
+              </span>
+              ?
+            </p>
+            <p className="text-sm text-surface-400 mt-2">
+              This action cannot be undone. All transactions associated with
+              this account will remain but won't be linked to any account.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            onClick={handleCloseDeleteModal}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            className="flex-1"
+            onClick={handleConfirmDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Account'}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+    </>
   );
 };

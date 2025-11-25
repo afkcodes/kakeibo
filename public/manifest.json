@@ -1,6 +1,6 @@
 {
-  "name": "Budgeto - Budget Tracker",
-  "short_name": "Budgeto",
+  "name": "Kakeibo - Budget Tracker",
+  "short_name": "Kakeibo",
   "description": "AI-powered budget tracking app for managing your finances",
   "start_url": "/",
   "display": "standalone",

@@ -13,10 +13,28 @@ const transactionSchema = z.object({
   amount: z.string().min(1, 'Amount is required'),
   type: z.enum(['expense', 'income', 'transfer']),
   description: z.string().min(1, 'Description is required'),
-  categoryId: z.string().min(1, 'Category is required'),
+  categoryId: z.string().optional(),
   accountId: z.string().min(1, 'Account is required'),
   date: z.string().min(1, 'Date is required'),
   toAccountId: z.string().optional(),
+}).refine((data) => {
+  // categoryId is required for expense and income, but not for transfer
+  if (data.type !== 'transfer') {
+    return data.categoryId && data.categoryId.length > 0;
+  }
+  return true;
+}, {
+  message: 'Category is required',
+  path: ['categoryId'],
+}).refine((data) => {
+  // toAccountId is required for transfers
+  if (data.type === 'transfer') {
+    return data.toAccountId && data.toAccountId.length > 0;
+  }
+  return true;
+}, {
+  message: 'Destination account is required',
+  path: ['toAccountId'],
 });
 
 type TransactionFormData = z.infer<typeof transactionSchema>;
@@ -70,7 +88,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
           amount: data.type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
           type: data.type,
           description: data.description,
-          categoryId: data.categoryId,
+          categoryId: data.categoryId || 'transfer',
           accountId: data.accountId,
           date: new Date(data.date),
           toAccountId: data.toAccountId,
@@ -187,6 +205,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
                   .filter((a) => a.id !== watch('accountId'))
                   .map((a) => ({ value: a.id, label: a.name }))}
                 placeholder="Select destination account"
+                error={errors.toAccountId?.message}
                 value={field.value || ''}
                 onValueChange={field.onChange}
               />
