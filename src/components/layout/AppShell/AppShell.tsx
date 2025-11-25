@@ -1,3 +1,4 @@
+import { PWAPrompts } from '@/components/common/PWAPrompts';
 import { AddAccountModal } from '@/components/features/accounts';
 import { AddBudgetModal } from '@/components/features/budgets';
 import { AddGoalModal } from '@/components/features/goals';
@@ -79,6 +80,9 @@ export const AppShell = () => {
       <AddBudgetModal />
       <AddGoalModal />
       <AddAccountModal />
+      
+      {/* PWA Install/Update Prompts */}
+      <PWAPrompts />
     </div>
   );
 };
