@@ -1,4 +1,5 @@
 import { Button, Modal, Select } from '@/components/ui';
+import { clearDatabase } from '@/services/db';
 import { useAppStore } from '@/store';
 import {
   AlertTriangle,
@@ -17,7 +18,7 @@ import {
 import { useState } from 'react';
 
 export const SettingsPage = () => {
-  const { theme, setTheme, settings, updateSettings } = useAppStore();
+  const { theme, setTheme, settings, updateSettings, resetStore } = useAppStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -44,8 +45,8 @@ export const SettingsPage = () => {
   const handleDeleteAllData = async () => {
     setIsDeleting(true);
     try {
-      // TODO: Implement actual data deletion
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await clearDatabase();
+      resetStore();
       setShowDeleteModal(false);
     } catch (error) {
       console.error('Failed to delete data:', error);

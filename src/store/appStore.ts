@@ -33,6 +33,9 @@ interface AppState {
   // Editing transaction
   editingTransaction: Transaction | null;
   setEditingTransaction: (transaction: Transaction | null) => void;
+
+  // Reset store
+  resetStore: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -69,6 +72,17 @@ export const useAppStore = create<AppState>()(
       // Editing transaction
       editingTransaction: null,
       setEditingTransaction: (transaction) => set({ editingTransaction: transaction }),
+
+      // Reset store to initial state
+      resetStore: () => set({
+        settings: defaultUserSettings,
+        sidebarOpen: true,
+        theme: 'system',
+        currentUserId: null,
+        isLoading: false,
+        activeModal: null,
+        editingTransaction: null,
+      }),
     }),
     {
       name: 'kakeibo-app-store',
