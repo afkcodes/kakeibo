@@ -4,19 +4,19 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useAppStore } from '@/store';
 import type { Account, AccountType } from '@/types';
 import {
-    AlertTriangle,
-    ArrowDownRight,
-    ArrowLeftRight,
-    ArrowUpRight,
-    Banknote,
-    Building2,
-    CreditCard,
-    MoreHorizontal,
-    Pencil,
-    Plus,
-    Trash2,
-    TrendingUp,
-    Wallet,
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowLeftRight,
+  ArrowUpRight,
+  Banknote,
+  Building2,
+  CreditCard,
+  MoreVertical,
+  Pencil,
+  Plus,
+  Trash2,
+  TrendingUp,
+  Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -329,7 +329,7 @@ export const AccountsPage = () => {
           </span>
         </div>
 
-        <div className="grid gap-3">
+        <div className="grid gap-2">
           {accounts.map((account) => {
             const Icon = getAccountIcon(account.type);
             const isNegative = account.balance < 0;
@@ -338,91 +338,82 @@ export const AccountsPage = () => {
             return (
               <div
                 key={account.id}
-                className="bg-surface-800/60 border border-surface-700/50 rounded-2xl p-4 hover:border-surface-600/70 transition-all duration-200"
+                className="relative flex items-center gap-3 bg-surface-800/40 border border-surface-700/30 rounded-xl p-3.5 squircle"
               >
-                <div className="flex items-center justify-between">
-                  {/* Left: Icon & Details */}
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${account.color}20` }}
-                    >
-                      <Icon
-                        className="w-6 h-6"
-                        style={{ color: account.color }}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-surface-50">
-                        {account.name}
-                      </h3>
-                      <p className="text-sm text-surface-400">
-                        {getAccountTypeLabel(account.type)}
-                      </p>
-                    </div>
-                  </div>
+                {/* Icon */}
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 squircle"
+                  style={{ backgroundColor: `${account.color}18` }}
+                >
+                  <Icon
+                    className="w-5 h-5"
+                    style={{ color: account.color }}
+                  />
+                </div>
 
-                  {/* Right: Balance & Menu */}
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p
-                        className={`text-lg font-semibold font-mono ${
-                          isCredit
-                            ? isNegative
-                              ? 'text-danger-400'
-                              : 'text-surface-50'
-                            : isNegative
-                              ? 'text-danger-400'
-                              : 'text-surface-50'
-                        }`}
-                      >
-                        {formatCurrency(account.balance)}
-                      </p>
-                      {isCredit && account.balance < 0 && (
-                        <p className="text-xs text-surface-400">Outstanding</p>
-                      )}
-                    </div>
-                    
-                    {/* Dropdown Menu */}
-                    <div className="relative" ref={openMenuId === account.id ? menuRef : null}>
+                {/* Name & Type */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-surface-100 text-[14px] truncate leading-tight">
+                    {account.name}
+                  </h3>
+                  <p className="text-[12px] text-surface-500 mt-0.5">
+                    {getAccountTypeLabel(account.type)}
+                  </p>
+                </div>
+
+                {/* Balance */}
+                <p
+                  className={`font-bold font-amount text-[15px] shrink-0 ${
+                    isCredit
+                      ? isNegative
+                        ? 'text-danger-400'
+                        : 'text-success-400'
+                      : isNegative
+                        ? 'text-danger-400'
+                        : 'text-surface-50'
+                  }`}
+                >
+                  {formatCurrency(account.balance)}
+                </p>
+
+                {/* Menu Button */}
+                <div className="relative shrink-0" ref={openMenuId === account.id ? menuRef : null}>
+                  <button
+                    className="p-1.5 -mr-1 rounded-lg active:bg-surface-700/50 text-surface-500"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(openMenuId === account.id ? null : account.id);
+                    }}
+                  >
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
+                  
+                  {openMenuId === account.id && (
+                    <div className="absolute right-0 top-full mt-1 w-44 bg-surface-800 border border-surface-700 rounded-xl shadow-xl z-50 py-1 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
                       <button
-                        className="p-2 rounded-lg hover:bg-surface-700/50 text-surface-400 hover:text-surface-200 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuId(openMenuId === account.id ? null : account.id);
-                        }}
+                        className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
+                        onClick={() => handleTransferToAccount(account.id)}
                       >
-                        <MoreHorizontal className="w-5 h-5" />
+                        <ArrowLeftRight className="w-4 h-4 text-surface-400" />
+                        Transfer
                       </button>
-                      
-                      {openMenuId === account.id && (
-                        <div className="absolute right-0 top-full mt-1 w-44 bg-surface-800 border border-surface-700 rounded-xl shadow-xl z-50 py-1 overflow-hidden">
-                          <button
-                            className="w-full px-4 py-2.5 text-left text-sm text-surface-200 hover:bg-surface-700/50 flex items-center gap-3 transition-colors"
-                            onClick={() => handleTransferToAccount(account.id)}
-                          >
-                            <ArrowLeftRight className="w-4 h-4 text-surface-400" />
-                            Transfer
-                          </button>
-                          <button
-                            className="w-full px-4 py-2.5 text-left text-sm text-surface-200 hover:bg-surface-700/50 flex items-center gap-3 transition-colors"
-                            onClick={() => handleOpenEditModal(account)}
-                          >
-                            <Pencil className="w-4 h-4 text-surface-400" />
-                            Edit Account
-                          </button>
-                          <div className="h-px bg-surface-700 my-1" />
-                          <button
-                            className="w-full px-4 py-2.5 text-left text-sm text-danger-400 hover:bg-danger-500/10 flex items-center gap-3 transition-colors"
-                            onClick={() => handleOpenDeleteModal(account)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Delete Account
-                          </button>
-                        </div>
-                      )}
+                      <button
+                        className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
+                        onClick={() => handleOpenEditModal(account)}
+                      >
+                        <Pencil className="w-4 h-4 text-surface-400" />
+                        Edit Account
+                      </button>
+                      <div className="h-px bg-surface-700 my-1" />
+                      <button
+                        className="w-full px-4 py-2.5 text-left text-sm text-danger-400 active:bg-danger-500/10 flex items-center gap-3 transition-colors"
+                        onClick={() => handleOpenDeleteModal(account)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete Account
+                      </button>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             );
@@ -431,12 +422,12 @@ export const AccountsPage = () => {
           {/* Add Account Card */}
           <button
             onClick={() => setActiveModal('add-account')}
-            className="border-2 border-dashed border-surface-600 hover:border-surface-500 rounded-2xl p-6 flex items-center justify-center gap-3 transition-all duration-200 group"
+            className="border-2 border-dashed border-surface-700/70 active:border-surface-500 rounded-2xl p-6 flex items-center justify-center gap-3 transition-all duration-200 group"
           >
-            <div className="w-10 h-10 bg-surface-700/50 group-hover:bg-surface-700 rounded-xl flex items-center justify-center transition-colors">
-              <Plus className="w-5 h-5 text-surface-400 group-hover:text-surface-300" />
+            <div className="w-10 h-10 bg-surface-700/50 group-active:bg-surface-700 rounded-xl flex items-center justify-center transition-colors">
+              <Plus className="w-5 h-5 text-surface-400 group-active:text-surface-300" />
             </div>
-            <span className="font-medium text-surface-400 group-hover:text-surface-300">
+            <span className="font-medium text-surface-400 group-active:text-surface-300">
               Add New Account
             </span>
           </button>

@@ -1,32 +1,34 @@
+import { TransactionCard } from '@/components/features/transactions/TransactionCard';
 import { Button, CategoryIcon, ProgressBar } from '@/components/ui';
 import { useAccountsWithBalance } from '@/hooks/useAccounts';
 import { useBudgetProgress } from '@/hooks/useBudgets';
 import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useGoalProgress } from '@/hooks/useGoals';
-import { useTransactions, useTransactionStats } from '@/hooks/useTransactions';
+import { useTransactionActions, useTransactions, useTransactionStats } from '@/hooks/useTransactions';
 import { useAppStore } from '@/store';
 import type { Account, Transaction } from '@/types';
 import { formatRelativeDate } from '@/utils/formatters';
 import { Link } from '@tanstack/react-router';
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  ChevronRight,
-  CreditCard,
-  Eye,
-  EyeOff,
-  Settings,
-  Sparkles,
-  Target,
-  Wallet
+    ArrowDownLeft,
+    ArrowUpRight,
+    ChevronRight,
+    CreditCard,
+    Eye,
+    EyeOff,
+    Settings,
+    Sparkles,
+    Target,
+    Wallet
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 export const DashboardPage = () => {
-  const { setActiveModal } = useAppStore();
+  const { setActiveModal, setEditingTransaction } = useAppStore();
   const { formatCurrency } = useCurrency();
   const transactions = useTransactions();
+  const { deleteTransaction } = useTransactionActions();
   const stats = useTransactionStats();
   const accounts = useAccountsWithBalance();
   const budgetProgress = useBudgetProgress();
@@ -45,6 +47,17 @@ export const DashboardPage = () => {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5);
   }, [transactions]);
+
+  // Handle edit transaction
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setActiveModal('add-transaction');
+  };
+
+  // Handle delete transaction
+  const handleDeleteTransaction = (transactionId: string) => {
+    deleteTransaction(transactionId);
+  };
 
   // Quick stats with safe access
   const monthlyIncome = stats?.monthlyIncome ?? 0;
@@ -399,30 +412,25 @@ export const DashboardPage = () => {
           <div className="space-y-2">
             {recentTransactions.map((transaction) => {
               const category = categories.find(c => c.id === transaction.categoryId);
-              const isExpense = transaction.type === 'expense';
               return (
-                <div
+                <TransactionCard
                   key={transaction.id}
-                  className="flex items-center gap-3 bg-surface-800/50 border border-surface-700/50 rounded-xl p-3.5"
-                >
-                  <div 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: (category?.color || '#6b7280') + '20' }}
-                  >
-                    <CategoryIcon icon={category?.icon || 'more-horizontal'} color={category?.color} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-surface-100 text-[13px] font-semibold truncate">
-                      {transaction.description || category?.name || 'Transaction'}
-                    </p>
-                    <p className="text-surface-500 text-[11px] tracking-wide">
-                      {category?.name} • {formatRelativeDate(transaction.date)}
-                    </p>
-                  </div>
-                  <p className={`font-bold font-amount text-[15px] ${isExpense ? 'text-danger-400' : 'text-success-400'}`}>
-                    {isExpense ? '-' : '+'}{formatCurrency(Math.abs(transaction.amount))}
-                  </p>
-                </div>
+                  id={transaction.id}
+                  description={transaction.description}
+                  amount={transaction.amount}
+                  type={transaction.type}
+                  date={transaction.date.toString()}
+                  category={category ? {
+                    name: category.name,
+                    icon: category.icon,
+                    color: category.color,
+                  } : undefined}
+                  formatCurrency={formatCurrency}
+                  formatDate={formatRelativeDate}
+                  onEdit={() => handleEditTransaction(transaction)}
+                  onDelete={() => handleDeleteTransaction(transaction.id)}
+                  variant="compact"
+                />
               );
             })}
           </div>

@@ -299,3 +299,11 @@ textarea,
   border-radius: 30px;
   corner-shape: squircle;
 }
+
+/* Apply squircle to all rounded elements globally */
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl {
+  corner-shape: squircle;
+}

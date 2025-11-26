@@ -1,7 +1,8 @@
-import { CategoryIcon } from '@/components/ui';
+import { TransactionCard } from '@/components/features/transactions/TransactionCard';
 import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useTransactions } from '@/hooks/useTransactions';
+import { useTransactionActions, useTransactions } from '@/hooks/useTransactions';
+import { useAppStore } from '@/store';
 import type { Transaction, TransactionType } from '@/types';
 import { Receipt, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -10,7 +11,9 @@ type FilterType = 'all' | TransactionType;
 
 export const TransactionsPage = () => {
   const { formatCurrency } = useCurrency();
+  const { setActiveModal, setEditingTransaction } = useAppStore();
   const transactions = useTransactions();
+  const { deleteTransaction } = useTransactionActions();
   const categories = useCategories();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -156,47 +159,33 @@ export const TransactionsPage = () => {
               <div className="space-y-2">
                 {group.transactions.map((transaction) => {
                   const category = getCategory(transaction.categoryId);
-                  const isExpense = transaction.type === 'expense';
-                  const isIncome = transaction.type === 'income';
+
+                  const handleEditTransaction = () => {
+                    setEditingTransaction(transaction);
+                    setActiveModal('add-transaction');
+                  };
+
+                  const handleDeleteTransaction = () => {
+                    deleteTransaction(transaction.id);
+                  };
 
                   return (
-                    <div
+                    <TransactionCard
                       key={transaction.id}
-                      className="flex items-center gap-3.5 bg-surface-800/40 border border-surface-700/30 rounded-2xl p-4 active:scale-[0.98] transition-transform"
-                    >
-                      {/* Category Icon */}
-                      <div 
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: (category?.color || '#6b7280') + '18' }}
-                      >
-                        <CategoryIcon 
-                          icon={category?.icon || 'more-horizontal'} 
-                          color={category?.color} 
-                          size="md"
-                        />
-                      </div>
-
-                      {/* Transaction Details */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-surface-100 text-[15px] font-semibold truncate leading-tight">
-                          {transaction.description || category?.name || 'Transaction'}
-                        </p>
-                        <p className="text-surface-500 text-[13px] mt-0.5">
-                          {category?.name || 'Uncategorized'}
-                        </p>
-                      </div>
-
-                      {/* Amount */}
-                      <div className="shrink-0 text-right">
-                        <p className={`font-bold font-amount text-[16px] ${
-                          isExpense ? 'text-danger-400' : 
-                          isIncome ? 'text-success-400' : 
-                          'text-primary-400'
-                        }`}>
-                          {isExpense ? '−' : isIncome ? '+' : ''}{formatCurrency(Math.abs(transaction.amount))}
-                        </p>
-                      </div>
-                    </div>
+                      id={transaction.id}
+                      description={transaction.description}
+                      amount={transaction.amount}
+                      type={transaction.type}
+                      date={transaction.date.toString()}
+                      category={category ? {
+                        name: category.name,
+                        icon: category.icon,
+                        color: category.color,
+                      } : undefined}
+                      formatCurrency={formatCurrency}
+                      onEdit={handleEditTransaction}
+                      onDelete={handleDeleteTransaction}
+                    />
                   );
                 })}
               </div>

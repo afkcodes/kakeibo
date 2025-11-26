@@ -1,3 +1,4 @@
+import type { Transaction } from '@/types';
 import type { UserSettings } from '@/types/user';
 import { defaultUserSettings } from '@/types/user';
 import { create } from 'zustand';
@@ -28,6 +29,10 @@ interface AppState {
   // Modal states
   activeModal: string | null;
   setActiveModal: (modal: string | null) => void;
+  
+  // Editing transaction
+  editingTransaction: Transaction | null;
+  setEditingTransaction: (transaction: Transaction | null) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -60,6 +65,10 @@ export const useAppStore = create<AppState>()(
       // Modals
       activeModal: null,
       setActiveModal: (modal) => set({ activeModal: modal }),
+      
+      // Editing transaction
+      editingTransaction: null,
+      setEditingTransaction: (transaction) => set({ editingTransaction: transaction }),
     }),
     {
       name: 'kakeibo-app-store',

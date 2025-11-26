@@ -5,7 +5,7 @@ import { useAppStore } from '@/store';
 import type { TransactionType } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -45,15 +45,17 @@ interface AddTransactionModalProps {
 }
 
 export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProps) => {
-  const { currentUserId } = useAppStore();
+  const { currentUserId, editingTransaction, setEditingTransaction } = useAppStore();
   const userId = currentUserId ?? 'default-user';
   
   const accounts = useAccounts(userId);
   const categories = useCategories(userId);
-  const { addTransaction } = useTransactionActions();
+  const { addTransaction, updateTransaction } = useTransactionActions();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeType, setActiveType] = useState<TransactionType>('expense');
+  
+  const isEditing = !!editingTransaction;
 
   const {
     register,
@@ -74,31 +76,79 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
     },
   });
 
-  const watchType = watch('type');
+  // Populate form when editing, reset when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset form when modal closes
+      setActiveType('expense');
+      reset({
+        type: 'expense',
+        date: format(new Date(), 'yyyy-MM-dd'),
+        amount: '',
+        description: '',
+        categoryId: '',
+        accountId: '',
+      });
+      return;
+    }
+
+    // Populate form when editing (wait for accounts/categories to load)
+    if (editingTransaction && accounts.length > 0 && categories.length > 0) {
+      const txType = editingTransaction.type;
+      setActiveType(txType);
+      // Use setTimeout to ensure Radix Select components pick up the controlled value
+      setTimeout(() => {
+        reset({
+          type: txType,
+          amount: Math.abs(editingTransaction.amount).toString(),
+          description: editingTransaction.description,
+          categoryId: editingTransaction.categoryId || '',
+          accountId: editingTransaction.accountId,
+          date: format(new Date(editingTransaction.date), 'yyyy-MM-dd'),
+          toAccountId: editingTransaction.toAccountId || '',
+        });
+      }, 0);
+    }
+  }, [isOpen, editingTransaction, reset, accounts.length, categories.length]);
+
   const filteredCategories = categories.filter(
-    (c) => c.type === (watchType === 'transfer' ? 'expense' : watchType)
+    (c) => c.type === (activeType === 'transfer' ? 'expense' : activeType)
   );
 
   const onSubmit = async (data: TransactionFormData) => {
     setIsSubmitting(true);
     try {
       const amount = parseFloat(data.amount);
-      await addTransaction(
-        {
+      
+      if (isEditing && editingTransaction) {
+        // Update existing transaction
+        await updateTransaction(editingTransaction.id, {
           amount: data.type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
           type: data.type,
           description: data.description,
-          categoryId: data.categoryId || 'transfer',
+          categoryId: data.categoryId || undefined,
           accountId: data.accountId,
           date: new Date(data.date),
           toAccountId: data.toAccountId,
-        },
-        userId
-      );
-      reset();
-      onClose();
+        });
+      } else {
+        // Add new transaction
+        await addTransaction(
+          {
+            amount: data.type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
+            type: data.type,
+            description: data.description,
+            categoryId: data.categoryId || 'transfer',
+            accountId: data.accountId,
+            date: new Date(data.date),
+            toAccountId: data.toAccountId,
+          },
+          userId
+        );
+      }
+      handleClose();
     } catch (error) {
-      console.error('Failed to add transaction:', error);
+      console.error('Failed to save transaction:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -106,6 +156,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
 
   const handleClose = () => {
     reset();
+    setEditingTransaction(null);
     onClose();
   };
 
@@ -113,7 +164,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Add Transaction"
+      title={isEditing ? 'Edit Transaction' : 'Add Transaction'}
       size="md"
       footer={
         <div className="flex gap-3 w-full">
@@ -126,7 +177,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
             onClick={handleSubmit(onSubmit)}
             className="flex-1"
           >
-            Add Transaction
+            {isEditing ? 'Save Changes' : 'Add Transaction'}
           </Button>
         </div>
       }
