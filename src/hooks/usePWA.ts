@@ -22,6 +22,16 @@ export function usePWA() {
   const [isInstallable, setIsInstallable] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [isInstallDismissed, setIsInstallDismissed] = useState(() => {
+    // Check if user dismissed the prompt recently (within 7 days)
+    const dismissed = localStorage.getItem('pwa-install-dismissed')
+    if (dismissed) {
+      const dismissedTime = parseInt(dismissed, 10)
+      const sevenDays = 7 * 24 * 60 * 60 * 1000
+      return Date.now() - dismissedTime < sevenDays
+    }
+    return false
+  })
 
   // Register service worker with auto-update
   const {
@@ -113,8 +123,13 @@ export function usePWA() {
     setNeedRefresh(false)
   }
 
+  const dismissInstallPrompt = () => {
+    setIsInstallDismissed(true)
+    localStorage.setItem('pwa-install-dismissed', Date.now().toString())
+  }
+
   return {
-    isInstallable,
+    isInstallable: isInstallable && !isInstallDismissed,
     isInstalled,
     isOnline,
     installApp,
@@ -123,5 +138,6 @@ export function usePWA() {
     updateServiceWorker,
     closeOfflineReady,
     closeNeedRefresh,
+    dismissInstallPrompt,
   }
 }

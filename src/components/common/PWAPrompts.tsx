@@ -1,6 +1,6 @@
+import { usePWA } from '@/hooks/usePWA'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Download, RefreshCw, Wifi, WifiOff, X } from 'lucide-react'
-import { usePWA } from '@/hooks/usePWA'
 
 export function PWAPrompts() {
   const {
@@ -12,6 +12,7 @@ export function PWAPrompts() {
     updateServiceWorker,
     closeOfflineReady,
     closeNeedRefresh,
+    dismissInstallPrompt,
   } = usePWA()
 
   return (
@@ -114,26 +115,40 @@ export function PWAPrompts() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-100 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4"
+            className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-100 bg-surface-800 rounded-lg shadow-2xl border border-surface-700 p-4"
           >
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-full">
-                <Download className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <div className="p-2 bg-primary-500/20 rounded-lg">
+                <Download className="w-5 h-5 text-primary-400" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 dark:text-white">
+                <h3 className="font-semibold text-surface-100">
                   Install Kakeibo
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-sm text-surface-400 mt-1">
                   Install the app for a better experience and offline access.
                 </p>
-                <button
-                  onClick={installApp}
-                  className="mt-3 w-full px-3 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
-                >
-                  Install App
-                </button>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={installApp}
+                    className="flex-1 px-3 py-2 bg-primary-500 text-white text-sm font-medium rounded-md hover:bg-primary-600 transition-colors"
+                  >
+                    Install
+                  </button>
+                  <button
+                    onClick={dismissInstallPrompt}
+                    className="flex-1 px-3 py-2 text-surface-400 text-sm font-medium hover:bg-surface-700 rounded-md transition-colors"
+                  >
+                    Not now
+                  </button>
+                </div>
               </div>
+              <button
+                onClick={dismissInstallPrompt}
+                className="p-1 hover:bg-surface-700 rounded-md transition-colors"
+              >
+                <X className="w-4 h-4 text-surface-500" />
+              </button>
             </div>
           </motion.div>
         )}

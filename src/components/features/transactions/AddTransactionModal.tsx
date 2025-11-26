@@ -116,18 +116,19 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
       title="Add Transaction"
       size="md"
       footer={
-        <>
-          <Button variant="secondary" onClick={handleClose}>
+        <div className="flex gap-3 w-full">
+          <Button variant="secondary" onClick={handleClose} className="flex-1">
             Cancel
           </Button>
           <Button
             type="submit"
             isLoading={isSubmitting}
             onClick={handleSubmit(onSubmit)}
+            className="flex-1"
           >
             Add Transaction
           </Button>
-        </>
+        </div>
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
