@@ -63,7 +63,7 @@ export const FloatingActionButton = () => {
         exit={{ scale: 0, opacity: 0 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setActiveModal(fabConfig.modal)}
-        className={`fixed right-4 bottom-30 z-50 lg:hidden w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors duration-200 ${fabConfig.color}`}
+        className={`fixed right-4 bottom-24 z-50 lg:hidden w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors duration-200 ${fabConfig.color}`}
       >
         <Icon className="w-6 h-6 text-white" />
       </motion.button>
