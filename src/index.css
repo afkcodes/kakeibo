@@ -293,3 +293,9 @@ textarea,
 .bg-expense {
   background: rgba(251, 113, 133, 0.15);
 }
+
+/* Squircle - iOS style rounded corners */
+.squircle {
+  border-radius: 30px;
+  corner-shape: squircle;
+}

@@ -10,16 +10,16 @@ import type { Account, Transaction } from '@/types';
 import { formatRelativeDate } from '@/utils/formatters';
 import { Link } from '@tanstack/react-router';
 import {
-    ArrowDownLeft,
-    ArrowUpRight,
-    ChevronRight,
-    CreditCard,
-    Eye,
-    EyeOff,
-    Settings,
-    Sparkles,
-    Target,
-    Wallet
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronRight,
+  CreditCard,
+  Eye,
+  EyeOff,
+  Settings,
+  Sparkles,
+  Target,
+  Wallet
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -115,58 +115,81 @@ export const DashboardPage = () => {
         </Link>
       </div>
 
-      {/* Hero Balance Card - Dark elegant style */}
-      <div className="relative overflow-hidden rounded-3xl bg-surface-800 border border-surface-700/50 p-5">
-        {/* Subtle decorative gradient overlay */}
-        <div className="absolute inset-0 bg-linear-to-br from-surface-700/20 via-transparent to-surface-900/30" />
-        <div className="absolute top-0 right-0 w-40 h-40 bg-primary-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      {/* Hero Balance Card - Credit Card Style (Squircle) */}
+      <div 
+        className="relative overflow-hidden p-6 squircle" 
+        style={{ 
+          background: 'linear-gradient(135deg, #5B6EF5 0%, #4A5BD9 50%, #3D4FC7 100%)',
+          boxShadow: '0 14px 40px -8px rgba(91, 110, 245, 0.5), 0 6px 20px -4px rgba(74, 91, 217, 0.3)',
+        }}
+      >
+        {/* Curved Lines SVG Pattern */}
+        <svg 
+          className="absolute inset-0 w-full h-full" 
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+          viewBox="0 0 400 250"
+        >
+          {/* Multiple curved lines */}
+          {[...Array(12)].map((_, i) => (
+            <path
+              key={i}
+              d={`M ${-50 + i * 40} 300 Q ${100 + i * 40} ${150 - i * 10}, ${400 + i * 30} ${-50 + i * 20}`}
+              fill="none"
+              stroke="rgba(255,255,255,0.08)"
+              strokeWidth="1.5"
+            />
+          ))}
+        </svg>
         
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-surface-400 text-[13px] font-medium tracking-wide uppercase">Total Balance</span>
+          {/* Top Row - Label & Eye Toggle */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-white/80 text-[13px] font-medium tracking-wide">Total Balance</span>
             <button 
               onClick={() => setShowBalance(!showBalance)}
-              className="w-8 h-8 rounded-full bg-surface-700/50 flex items-center justify-center hover:bg-surface-600/50 transition-colors"
+              className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
             >
               {showBalance ? (
-                <Eye className="w-4 h-4 text-surface-400" />
+                <Eye className="w-[18px] h-[18px] text-white/80" />
               ) : (
-                <EyeOff className="w-4 h-4 text-surface-400" />
+                <EyeOff className="w-[18px] h-[18px] text-white/80" />
               )}
             </button>
           </div>
           
-          <div className="mb-6">
-            <h1 className="text-[32px] font-bold text-surface-50 font-amount tracking-tight leading-none">
+          {/* Balance Amount */}
+          <div className="mb-8">
+            <h1 className="text-[40px] font-bold text-white font-amount tracking-tight leading-none">
               {showBalance ? formatCurrency(totalBalance) : '••••••'}
             </h1>
             {accounts.length > 0 && (
-              <p className="text-surface-500 text-[13px] mt-1.5 tracking-wide">
+              <p className="text-white/60 text-[13px] mt-2">
                 {accounts.length} account{accounts.length > 1 ? 's' : ''} · November 2025
               </p>
             )}
           </div>
 
           {/* Income/Expense Row */}
-          <div className="flex gap-6">
+          <div className="flex gap-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-success-500/15 flex items-center justify-center">
-                <ArrowDownLeft className="w-5 h-5 text-success-400" />
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <ArrowDownLeft className="w-5 h-5 text-emerald-300" />
               </div>
               <div>
-                <p className="text-surface-500 text-[11px] font-medium uppercase tracking-wider">Income</p>
-                <p className="text-surface-100 font-semibold font-amount text-[15px]">
+                <p className="text-white/60 text-[11px] font-medium uppercase tracking-wider">Income</p>
+                <p className="text-white font-semibold font-amount text-[15px]">
                   {showBalance ? formatCurrency(monthlyIncome) : '••••'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-danger-500/15 flex items-center justify-center">
-                <ArrowUpRight className="w-5 h-5 text-danger-400" />
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <ArrowUpRight className="w-5 h-5 text-rose-300" />
               </div>
               <div>
-                <p className="text-surface-500 text-[11px] font-medium uppercase tracking-wider">Expenses</p>
-                <p className="text-surface-100 font-semibold font-amount text-[15px]">
+                <p className="text-white/60 text-[11px] font-medium uppercase tracking-wider">Expenses</p>
+                <p className="text-white font-semibold font-amount text-[15px]">
                   {showBalance ? formatCurrency(monthlyExpenses) : '••••'}
                 </p>
               </div>
