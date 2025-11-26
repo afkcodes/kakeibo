@@ -2,17 +2,17 @@
 
 /* Custom Design System - Dark Elegant Theme */
 @theme {
-  /* Primary - Soft Blue (#4a90e2) */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #4a90e2;
-  --color-primary-600: #3b7dd8;
-  --color-primary-700: #2563eb;
-  --color-primary-800: #1d4ed8;
-  --color-primary-900: #1e40af;
+  /* Primary - Purple Blue (#5B6EF5) - matches card */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #5B6EF5;
+  --color-primary-600: #4A5BD9;
+  --color-primary-700: #3D4FC7;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
 
   /* Success/Income - Emerald Green */
   --color-success-50: #ecfdf5;
