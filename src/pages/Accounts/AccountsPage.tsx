@@ -71,7 +71,7 @@ const colorOptions = [
 
 export const AccountsPage = () => {
   const { currentUserId, setActiveModal } = useAppStore();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrencyCompact } = useCurrency();
   const accounts = useAccountsWithBalance(currentUserId ?? undefined);
   const stats = useAccountStats(currentUserId ?? undefined);
   const { deleteAccount, updateAccount } = useAccountActions();
@@ -205,10 +205,10 @@ export const AccountsPage = () => {
       </div>
 
       {/* Net Worth Overview Card */}
-      <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl p-5">
+      <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle p-5">
         <div className="flex flex-col gap-4">
           {/* Net Worth Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             <div>
               <p className="text-sm text-surface-400">Net Worth</p>
               <p
@@ -216,22 +216,22 @@ export const AccountsPage = () => {
                   netWorth >= 0 ? 'text-surface-50' : 'text-danger-400'
                 }`}
               >
-                {formatCurrency(netWorth)}
+                {formatCurrencyCompact(netWorth)}
               </p>
             </div>
             <div
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium ${
                 netWorth >= 0
-                  ? 'bg-success-500/20 text-success-400'
-                  : 'bg-danger-500/20 text-danger-400'
+                  ? 'bg-success-500/15 text-success-400'
+                  : 'bg-danger-500/15 text-danger-400'
               }`}
             >
               {netWorth >= 0 ? (
-                <ArrowUpRight className="w-4 h-4" />
+                <ArrowUpRight className="w-3 h-3" />
               ) : (
-                <ArrowDownRight className="w-4 h-4" />
+                <ArrowDownRight className="w-3 h-3" />
               )}
-              {netWorth >= 0 ? 'Positive' : 'Negative'}
+              <span>{netWorth >= 0 ? 'Positive' : 'Negative'}</span>
             </div>
           </div>
 
@@ -254,12 +254,12 @@ export const AccountsPage = () => {
                 <div className="w-2 h-2 rounded-full bg-success-500" />
                 <span className="text-surface-400">Assets</span>
                 <span className="font-mono font-medium text-success-400">
-                  {formatCurrency(totalAssets)}
+                  {formatCurrencyCompact(totalAssets)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-mono font-medium text-danger-400">
-                  {formatCurrency(totalLiabilities)}
+                  {formatCurrencyCompact(totalLiabilities)}
                 </span>
                 <span className="text-surface-400">Liabilities</span>
                 <div className="w-2 h-2 rounded-full bg-danger-500" />
@@ -303,7 +303,7 @@ export const AccountsPage = () => {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-surface-800/40 border border-surface-700/30 rounded-xl p-3 flex items-center gap-3"
+            className="bg-surface-800/40 border border-surface-700/30 rounded-xl squircle p-3 flex items-center gap-3"
           >
             <div className={`p-2 rounded-lg ${stat.bg}`}>
               <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -373,7 +373,7 @@ export const AccountsPage = () => {
                         : 'text-surface-50'
                   }`}
                 >
-                  {formatCurrency(account.balance)}
+                  {formatCurrencyCompact(account.balance)}
                 </p>
 
                 {/* Menu Button */}
@@ -389,7 +389,7 @@ export const AccountsPage = () => {
                   </button>
                   
                   {openMenuId === account.id && (
-                    <div className="absolute right-0 top-full mt-1 w-44 bg-surface-800 border border-surface-700 rounded-xl shadow-xl z-50 py-1 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
+                    <div className="absolute right-0 top-full mt-1 w-44 bg-surface-800 border border-surface-700 rounded-xl squircle shadow-xl z-50 py-1 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
                       <button
                         className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
                         onClick={() => handleTransferToAccount(account.id)}
@@ -422,9 +422,9 @@ export const AccountsPage = () => {
           {/* Add Account Card */}
           <button
             onClick={() => setActiveModal('add-account')}
-            className="border-2 border-dashed border-surface-700/70 active:border-surface-500 rounded-2xl p-6 flex items-center justify-center gap-3 transition-all duration-200 group"
+            className="border-2 border-dashed border-surface-700/70 active:border-surface-500 rounded-xl squircle p-6 flex items-center justify-center gap-3 transition-all duration-200 group"
           >
-            <div className="w-10 h-10 bg-surface-700/50 group-active:bg-surface-700 rounded-xl flex items-center justify-center transition-colors">
+            <div className="w-10 h-10 bg-surface-700/50 group-active:bg-surface-700 rounded-xl squircle flex items-center justify-center transition-colors">
               <Plus className="w-5 h-5 text-surface-400 group-active:text-surface-300" />
             </div>
             <span className="font-medium text-surface-400 group-active:text-surface-300">
@@ -436,8 +436,8 @@ export const AccountsPage = () => {
 
       {/* Empty State */}
       {accounts.length === 0 && (
-        <div className="bg-surface-800/40 border border-surface-700/30 rounded-2xl p-8 text-center">
-          <div className="w-16 h-16 bg-surface-700/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="bg-surface-800/40 border border-surface-700/30 rounded-xl squircle p-8 text-center">
+          <div className="w-16 h-16 bg-surface-700/50 rounded-xl squircle flex items-center justify-center mx-auto mb-4">
             <Wallet className="w-8 h-8 text-surface-400" />
           </div>
           <h3 className="text-lg font-medium text-surface-50 mb-2">

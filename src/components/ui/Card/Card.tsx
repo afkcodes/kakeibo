@@ -37,7 +37,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-2xl transition-all duration-300',
+          'rounded-xl squircle transition-all duration-300',
           variantClasses[variant],
           paddingClasses[padding],
           hover && 'hover:border-surface-600 hover:shadow-lg hover:shadow-primary-500/5 cursor-pointer',

@@ -106,7 +106,7 @@ export const TransactionsPage = () => {
           placeholder="Search transactions..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-surface-800/60 border border-surface-700/50 rounded-xl pl-11 pr-10 py-3 text-[15px] text-surface-100 placeholder:text-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500/50 transition-all"
+          className="w-full bg-surface-800/60 border border-surface-700/50 rounded-xl squircle pl-11 pr-10 py-3 text-[15px] text-surface-100 placeholder:text-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500/50 transition-all"
         />
         {searchQuery && (
           <button
@@ -119,7 +119,7 @@ export const TransactionsPage = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-1 p-1 bg-surface-800/40 rounded-xl mb-5">
+      <div className="flex gap-1 p-1 bg-surface-800/40 rounded-xl squircle mb-5">
         {(['all', 'expense', 'income'] as const).map((type) => (
           <button
             key={type}
@@ -139,7 +139,7 @@ export const TransactionsPage = () => {
       <div className="space-y-5">
         {groupedTransactions.length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-surface-800/50 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-xl squircle bg-surface-800/50 flex items-center justify-center mx-auto mb-4">
               <Receipt className="w-7 h-7 text-surface-600" />
             </div>
             <p className="text-surface-300 font-semibold text-[15px]">No transactions</p>

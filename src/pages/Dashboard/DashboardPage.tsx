@@ -26,7 +26,7 @@ import { useMemo, useState } from 'react';
 
 export const DashboardPage = () => {
   const { setActiveModal, setEditingTransaction } = useAppStore();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, formatCurrencyCompact } = useCurrency();
   const transactions = useTransactions();
   const { deleteTransaction } = useTransactionActions();
   const stats = useTransactionStats();
@@ -174,7 +174,7 @@ export const DashboardPage = () => {
           {/* Balance Amount */}
           <div className="mb-8">
             <h1 className="text-[40px] font-bold text-white font-amount tracking-tight leading-none">
-              {showBalance ? formatCurrency(totalBalance) : '••••••'}
+              {showBalance ? formatCurrencyCompact(totalBalance) : '••••••'}
             </h1>
             {accounts.length > 0 && (
               <p className="text-white/60 text-[13px] mt-2">
@@ -192,7 +192,7 @@ export const DashboardPage = () => {
               <div>
                 <p className="text-white/60 text-[11px] font-medium uppercase tracking-wider">Income</p>
                 <p className="text-white font-semibold font-amount text-[15px]">
-                  {showBalance ? formatCurrency(monthlyIncome) : '••••'}
+                  {showBalance ? formatCurrencyCompact(monthlyIncome) : '••••'}
                 </p>
               </div>
             </div>
@@ -203,7 +203,7 @@ export const DashboardPage = () => {
               <div>
                 <p className="text-white/60 text-[11px] font-medium uppercase tracking-wider">Expenses</p>
                 <p className="text-white font-semibold font-amount text-[15px]">
-                  {showBalance ? formatCurrency(monthlyExpenses) : '••••'}
+                  {showBalance ? formatCurrencyCompact(monthlyExpenses) : '••••'}
                 </p>
               </div>
             </div>
@@ -213,11 +213,11 @@ export const DashboardPage = () => {
 
       {/* Savings Rate - Compact */}
       {monthlyIncome > 0 && (
-        <div className="bg-surface-800/50 border border-surface-700/50 rounded-2xl p-4">
+        <div className="bg-surface-800/50 border border-surface-700/50 rounded-xl squircle p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-surface-300 text-[13px] font-medium">This month's savings</span>
             <span className={`text-[15px] font-bold font-amount ${savings >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
-              {savings >= 0 ? '+' : ''}{formatCurrency(savings)}
+              {savings >= 0 ? '+' : ''}{formatCurrencyCompact(savings)}
             </span>
           </div>
           <ProgressBar 
@@ -244,7 +244,7 @@ export const DashboardPage = () => {
             {spendingByCategory.map((item) => (
               <div
                 key={item.categoryId}
-                className="bg-surface-800/50 border border-surface-700/50 rounded-xl p-3.5"
+                className="bg-surface-800/50 border border-surface-700/50 rounded-xl squircle p-3.5"
               >
                 <div className="flex items-center gap-2.5 mb-2">
                   <div 
@@ -256,7 +256,7 @@ export const DashboardPage = () => {
                   <span className="text-surface-400 text-[12px] font-medium truncate">{item.name}</span>
                 </div>
                 <p className="text-surface-50 font-bold font-amount text-[15px] tracking-tight">
-                  {formatCurrency(item.amount)}
+                  {formatCurrencyCompact(item.amount)}
                 </p>
               </div>
             ))}
@@ -279,7 +279,7 @@ export const DashboardPage = () => {
               return (
                 <div
                   key={bp.budget.id}
-                  className="bg-surface-800/50 border border-surface-700/50 rounded-xl p-3.5"
+                  className="bg-surface-800/50 border border-surface-700/50 rounded-xl squircle p-3.5"
                 >
                   <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-2.5">
@@ -301,7 +301,7 @@ export const DashboardPage = () => {
                     size="sm"
                   />
                   <p className="text-surface-500 text-[12px] mt-2 tracking-wide">
-                    {formatCurrency(bp.remaining)} remaining
+                    {formatCurrencyCompact(bp.remaining)} remaining
                   </p>
                 </div>
               );
@@ -323,7 +323,7 @@ export const DashboardPage = () => {
             {activeGoals.map((gp) => (
               <div
                 key={gp.goal.id}
-                className="bg-surface-800/50 border border-surface-700/50 rounded-xl p-3.5"
+                className="bg-surface-800/50 border border-surface-700/50 rounded-xl squircle p-3.5"
               >
                 <div className="flex items-center gap-3 mb-2.5">
                   <div 
@@ -368,7 +368,7 @@ export const DashboardPage = () => {
             {accounts.slice(0, 3).map((account) => (
               <div
                 key={account.id}
-                className="flex items-center justify-between bg-surface-800/50 border border-surface-700/50 rounded-xl p-3.5"
+                className="flex items-center justify-between bg-surface-800/50 border border-surface-700/50 rounded-xl squircle p-3.5"
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -383,7 +383,7 @@ export const DashboardPage = () => {
                   </div>
                 </div>
                 <p className="text-surface-50 font-bold font-amount text-[15px]">
-                  {showBalance ? formatCurrency(account.balance) : '••••••'}
+                  {showBalance ? formatCurrencyCompact(account.balance) : '••••••'}
                 </p>
               </div>
             ))}
@@ -401,7 +401,7 @@ export const DashboardPage = () => {
         </div>
         
         {recentTransactions.length === 0 ? (
-          <div className="text-center py-10 bg-surface-800/30 rounded-xl border border-surface-700/30">
+          <div className="text-center py-10 bg-surface-800/30 rounded-xl squircle border border-surface-700/30">
             <div className="w-12 h-12 rounded-full bg-surface-700/50 flex items-center justify-center mx-auto mb-3">
               <ArrowUpRight className="w-6 h-6 text-surface-500" />
             </div>
@@ -439,7 +439,7 @@ export const DashboardPage = () => {
 
       {/* Empty State for New Users */}
       {accounts.length === 0 && transactions.length === 0 && (
-        <div className="bg-surface-800/50 border border-surface-700/50 rounded-xl p-6 text-center">
+        <div className="bg-surface-800/50 border border-surface-700/50 rounded-xl squircle p-6 text-center">
           <div className="w-14 h-14 rounded-full bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
             <Sparkles className="w-7 h-7 text-primary-400" />
           </div>

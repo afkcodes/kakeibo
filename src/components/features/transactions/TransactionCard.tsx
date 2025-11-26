@@ -153,7 +153,7 @@ export const TransactionCard = ({
       {menuOpen && (
         <div
           ref={menuRef}
-          className="absolute right-2 top-full mt-1 z-50 bg-surface-800 border border-surface-700 rounded-xl shadow-xl overflow-hidden min-w-[140px] animate-in fade-in-0 zoom-in-95 duration-150"
+          className="absolute right-2 top-full mt-1 z-50 bg-surface-800 border border-surface-700 rounded-xl squircle shadow-xl overflow-hidden min-w-[140px] animate-in fade-in-0 zoom-in-95 duration-150"
         >
           {!showDeleteConfirm ? (
             <>

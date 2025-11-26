@@ -296,14 +296,6 @@ textarea,
 
 /* Squircle - iOS style rounded corners */
 .squircle {
-  border-radius: 30px;
-  corner-shape: squircle;
-}
-
-/* Apply squircle to all rounded elements globally */
-.rounded-lg,
-.rounded-xl,
-.rounded-2xl,
-.rounded-3xl {
+  border-radius: 24px;
   corner-shape: squircle;
 }

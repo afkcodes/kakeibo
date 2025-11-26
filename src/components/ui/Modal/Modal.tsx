@@ -88,7 +88,7 @@ const Modal = ({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              'relative w-full bg-surface-900 rounded-2xl shadow-2xl shadow-black/50',
+              'relative w-full bg-surface-900 rounded-xl squircle shadow-2xl shadow-black/50',
               'max-h-[90vh] overflow-hidden flex flex-col',
               'border border-surface-700',
               sizeClasses[size]

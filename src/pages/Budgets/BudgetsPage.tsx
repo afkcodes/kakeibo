@@ -46,7 +46,7 @@ export const BudgetsPage = () => {
 
       {/* Overview Card */}
       {budgetProgress.length > 0 && (
-        <div className="bg-surface-800/40 border border-surface-700/30 rounded-2xl p-5 mb-6">
+        <div className="bg-surface-800/40 border border-surface-700/30 rounded-xl squircle p-5 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-surface-500 text-[13px] font-medium">Monthly Overview</p>
@@ -87,7 +87,7 @@ export const BudgetsPage = () => {
       {/* Budget List */}
       {budgetProgress.length === 0 ? (
         <div className="text-center py-20">
-          <div className="w-16 h-16 rounded-2xl bg-surface-800/50 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-xl squircle bg-surface-800/50 flex items-center justify-center mx-auto mb-4">
             <PieChart className="w-7 h-7 text-surface-600" />
           </div>
           <p className="text-surface-300 font-semibold text-[15px]">No budgets yet</p>
@@ -96,7 +96,7 @@ export const BudgetsPage = () => {
           </p>
           <button
             onClick={() => setActiveModal('add-budget')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-[14px] font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-[14px] font-semibold rounded-xl squircle transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Budget
@@ -113,7 +113,7 @@ export const BudgetsPage = () => {
             return (
               <div 
                 key={bp.budget.id} 
-                className="bg-surface-800/40 border border-surface-700/30 rounded-2xl p-4 active:scale-[0.98] transition-transform"
+                className="bg-surface-800/40 border border-surface-700/30 rounded-xl squircle p-4 active:scale-[0.98] transition-transform"
               >
                 {/* Header Row */}
                 <div className="flex items-center gap-3 mb-3">

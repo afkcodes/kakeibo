@@ -17,6 +17,38 @@ export const formatCurrency = (
 };
 
 /**
+ * Format a number as currency with compact notation for large numbers
+ * Shows full number up to 7 digits, then abbreviates (K, M, B, etc.)
+ */
+export const formatCurrencyCompact = (
+  amount: number,
+  currency: string = 'USD',
+  locale: string = 'en-US'
+): string => {
+  const absAmount = Math.abs(amount);
+  
+  // If less than 10 million (7 digits), show full number
+  if (absAmount < 10000000) {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  }
+  
+  // For larger numbers, use compact notation
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    notation: 'compact',
+    compactDisplay: 'short',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(amount);
+};
+
+/**
  * Format a number with compact notation (e.g., 1K, 1M)
  */
 export const formatCompactNumber = (

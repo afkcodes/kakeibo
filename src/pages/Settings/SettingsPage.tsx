@@ -72,9 +72,9 @@ export const SettingsPage = () => {
         </div>
 
         {/* Profile Section */}
-        <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl p-5">
+        <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle p-5">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-primary-500/20 rounded-2xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-primary-500/20 rounded-xl squircle flex items-center justify-center">
               <User className="w-8 h-8 text-primary-400" />
             </div>
             <div className="flex-1">
@@ -89,7 +89,7 @@ export const SettingsPage = () => {
         </div>
 
         {/* Appearance Section */}
-        <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl overflow-hidden">
+        <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle overflow-hidden">
           <div className="px-5 py-4 border-b border-surface-700/50">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-500/20 rounded-lg">
@@ -139,7 +139,7 @@ export const SettingsPage = () => {
         </div>
 
         {/* Preferences Section */}
-        <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl overflow-hidden">
+        <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle overflow-hidden">
           <div className="px-5 py-4 border-b border-surface-700/50">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-500/20 rounded-lg">
@@ -184,7 +184,7 @@ export const SettingsPage = () => {
         </div>
 
         {/* Notifications Section */}
-        <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl overflow-hidden">
+        <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle overflow-hidden">
           <div className="px-5 py-4 border-b border-surface-700/50">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-warning-500/20 rounded-lg">
@@ -250,7 +250,7 @@ export const SettingsPage = () => {
         </div>
 
         {/* Data Management Section */}
-        <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl overflow-hidden">
+        <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle overflow-hidden">
           <div className="px-5 py-4 border-b border-surface-700/50">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-success-500/20 rounded-lg">

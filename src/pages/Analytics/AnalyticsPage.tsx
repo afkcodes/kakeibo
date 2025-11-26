@@ -5,17 +5,17 @@ import { useAppStore } from '@/store';
 import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
 import { useMemo, useState } from 'react';
 import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+    Area,
+    AreaChart,
+    Bar,
+    BarChart,
+    Cell,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
 } from 'recharts';
 
 type TimeRange = 'week' | 'month' | '3months' | '6months';
@@ -214,13 +214,13 @@ export function AnalyticsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl p-4">
+        <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle p-4">
           <p className="text-xs text-surface-400 mb-1">Total Spent</p>
           <p className="text-lg font-semibold text-surface-50">
             {formatCurrency(totalStats.total)}
           </p>
         </div>
-        <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl p-4">
+        <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle p-4">
           <p className="text-xs text-surface-400 mb-1">Avg Transaction</p>
           <p className="text-lg font-semibold text-surface-50">
             {formatCurrency(totalStats.average)}
@@ -229,7 +229,7 @@ export function AnalyticsPage() {
       </div>
 
       {/* Spending Trend */}
-      <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl p-4 mb-5">
+      <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle p-4 mb-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-surface-50">Spending Trend</h2>
           <div className="flex gap-1 bg-surface-900/50 rounded-lg p-1">
@@ -286,7 +286,7 @@ export function AnalyticsPage() {
         </div>
       </div>
       {/* Category Breakdown */}
-      <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl p-4 mb-5">
+      <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle p-4 mb-5">
         <h2 className="text-base font-semibold text-surface-50 mb-4">By Category</h2>
         {categoryData.length === 0 ? (
           <div className="h-32 flex items-center justify-center text-surface-400 text-sm">
@@ -357,7 +357,7 @@ export function AnalyticsPage() {
       </div>
 
       {/* Monthly Comparison */}
-      <div className="bg-surface-800/60 border border-surface-700/50 rounded-2xl p-4">
+      <div className="bg-surface-800/60 border border-surface-700/50 rounded-xl squircle p-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-surface-50">Monthly Comparison</h2>
           <div
