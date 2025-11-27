@@ -1,16 +1,49 @@
 import { CategoryIcon } from '@/components/ui';
-import { useBudgetProgress } from '@/hooks/useBudgets';
+import { useBudgetActions, useBudgetProgress } from '@/hooks/useBudgets';
 import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useAppStore } from '@/store';
-import { PieChart, Plus } from 'lucide-react';
-import { useMemo } from 'react';
+import type { Budget } from '@/types';
+import { MoreVertical, Pencil, PieChart, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export const BudgetsPage = () => {
-  const { currentUserId, setActiveModal } = useAppStore();
+  const { currentUserId, setActiveModal, setEditingBudget } = useAppStore();
   const { formatCurrency } = useCurrency();
   const budgetProgress = useBudgetProgress(currentUserId ?? undefined);
   const categories = useCategories(currentUserId ?? undefined);
+  const { deleteBudget } = useBudgetActions();
+
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [deletingBudgetId, setDeletingBudgetId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+        setDeletingBudgetId(null);
+      }
+    };
+
+    if (openMenuId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [openMenuId]);
+
+  const handleEditBudget = (budget: Budget) => {
+    setEditingBudget(budget);
+    setActiveModal('add-budget');
+    setOpenMenuId(null);
+  };
+
+  const handleDeleteBudget = async (budgetId: string) => {
+    await deleteBudget(budgetId);
+    setOpenMenuId(null);
+    setDeletingBudgetId(null);
+  };
 
   // Create a map of category id to category for quick lookup
   const categoryMap = useMemo(() => {
@@ -103,7 +136,7 @@ export const BudgetsPage = () => {
           </button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {budgetProgress.map((bp) => {
             const category = categoryMap[bp.budget.categoryId];
             const categoryName = category?.name || 'Unknown';
@@ -113,70 +146,130 @@ export const BudgetsPage = () => {
             return (
               <div 
                 key={bp.budget.id} 
-                className="bg-surface-800/40 border border-surface-700/30 rounded-xl squircle p-4 active:scale-[0.98] transition-transform"
+                className="relative flex items-center gap-3 bg-surface-800/40 border border-surface-700/30 rounded-xl squircle p-3.5"
               >
-                {/* Header Row */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div 
-                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: (category?.color || '#6b7280') + '18' }}
-                  >
-                    <CategoryIcon 
-                      icon={category?.icon || 'more-horizontal'} 
-                      color={category?.color} 
-                      size="md"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-surface-100 text-[15px] font-semibold truncate">
+                {/* Category Icon */}
+                <div 
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: (category?.color || '#6b7280') + '18' }}
+                >
+                  <CategoryIcon 
+                    icon={category?.icon || 'more-horizontal'} 
+                    color={category?.color} 
+                    size="sm"
+                  />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-surface-100 text-[14px] font-semibold truncate">
                       {categoryName}
                     </p>
-                    <p className="text-surface-500 text-[12px] capitalize">
-                      {bp.budget.period} budget
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className={`font-bold font-amount text-[15px] ${
+                    <p className={`font-bold font-amount text-[14px] shrink-0 ml-2 ${
                       isOverBudget ? 'text-danger-400' : 
                       isWarning ? 'text-warning-400' : 
                       'text-surface-100'
                     }`}>
-                      {formatCurrency(bp.spent)}
+                      {formatCurrency(bp.spent)} <span className="text-surface-500 font-normal">/ {formatCurrency(bp.budget.amount)}</span>
                     </p>
-                    <p className="text-surface-500 text-[12px]">
-                      / {formatCurrency(bp.budget.amount)}
-                    </p>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="h-1.5 bg-surface-700/50 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        isOverBudget ? 'bg-danger-500' : 
+                        isWarning ? 'bg-warning-500' : 
+                        'bg-primary-500'
+                      }`}
+                      style={{ width: `${Math.min(bp.percentage, 100)}%` }}
+                    />
+                  </div>
+                  
+                  {/* Footer */}
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span className={`text-[11px] font-medium ${
+                      isOverBudget ? 'text-danger-400' : 
+                      isWarning ? 'text-warning-400' : 
+                      'text-success-400'
+                    }`}>
+                      {isOverBudget ? 'Over budget' : isWarning ? 'Almost there' : 'On track'}
+                    </span>
+                    <span className={`text-[11px] font-medium font-amount ${
+                      isOverBudget ? 'text-danger-400' : 'text-surface-400'
+                    }`}>
+                      {isOverBudget ? `−${formatCurrency(Math.abs(bp.remaining))}` : `${formatCurrency(bp.remaining)} left`}
+                    </span>
                   </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="h-2 bg-surface-700/50 rounded-full overflow-hidden mb-2.5">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-300 ${
-                      isOverBudget ? 'bg-danger-500' : 
-                      isWarning ? 'bg-warning-500' : 
-                      'bg-primary-500'
-                    }`}
-                    style={{ width: `${Math.min(bp.percentage, 100)}%` }}
-                  />
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between">
-                  <span className={`text-[12px] font-medium px-2 py-0.5 rounded-full ${
-                    isOverBudget 
-                      ? 'bg-danger-500/15 text-danger-400' 
-                      : isWarning 
-                        ? 'bg-warning-500/15 text-warning-400' 
-                        : 'bg-success-500/15 text-success-400'
-                  }`}>
-                    {isOverBudget ? 'Over budget' : isWarning ? 'Almost there' : 'On track'}
-                  </span>
-                  <span className={`text-[13px] font-medium font-amount ${
-                    isOverBudget ? 'text-danger-400' : 'text-success-400'
-                  }`}>
-                    {isOverBudget ? `−${formatCurrency(Math.abs(bp.remaining))}` : `${formatCurrency(bp.remaining)} left`}
-                  </span>
+                {/* 3-dot Menu */}
+                <div className="relative shrink-0" ref={openMenuId === bp.budget.id ? menuRef : null}>
+                  <button
+                    className="p-1.5 -mr-1 rounded-lg active:bg-surface-700/50 text-surface-500"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(openMenuId === bp.budget.id ? null : bp.budget.id);
+                      setDeletingBudgetId(null);
+                    }}
+                  >
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
+                  
+                  {openMenuId === bp.budget.id && (
+                    <div className="absolute right-0 top-full mt-1 w-40 bg-surface-800 border border-surface-700 rounded-xl squircle shadow-xl z-50 py-1 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
+                      {deletingBudgetId === bp.budget.id ? (
+                        <div className="px-4 py-3">
+                          <p className="text-[13px] text-surface-200 mb-3">Delete this budget?</p>
+                          <div className="flex gap-2">
+                            <button
+                              className="flex-1 px-3 py-1.5 text-[12px] font-medium bg-surface-700 text-surface-300 rounded-lg active:bg-surface-600"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeletingBudgetId(null);
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className="flex-1 px-3 py-1.5 text-[12px] font-medium bg-danger-500 text-white rounded-lg active:bg-danger-600"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteBudget(bp.budget.id);
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditBudget(bp.budget);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4 text-surface-400" />
+                            Edit Budget
+                          </button>
+                          <div className="h-px bg-surface-700 my-1" />
+                          <button
+                            className="w-full px-4 py-2.5 text-left text-sm text-danger-400 active:bg-danger-500/10 flex items-center gap-3 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingBudgetId(bp.budget.id);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             );

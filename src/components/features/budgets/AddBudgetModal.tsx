@@ -1,10 +1,10 @@
-import { Button, Input, Modal, Select } from '@/components/ui';
+import { Button, Checkbox, Input, Modal, Select } from '@/components/ui';
 import { CategorySelect } from '@/components/ui/CategorySelect/CategorySelect';
 import { useBudgetActions } from '@/hooks/useBudgets';
 import { useCategories } from '@/hooks/useCategories';
 import { useAppStore } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -18,11 +18,12 @@ const budgetSchema = z.object({
 type BudgetFormData = z.infer<typeof budgetSchema>;
 
 export const AddBudgetModal = () => {
-  const { activeModal, setActiveModal, currentUserId } = useAppStore();
+  const { activeModal, setActiveModal, currentUserId, editingBudget, setEditingBudget } = useAppStore();
   const categories = useCategories();
-  const { addBudget } = useBudgetActions();
+  const { addBudget, updateBudget } = useBudgetActions();
   
   const isOpen = activeModal === 'add-budget';
+  const isEditing = !!editingBudget;
 
   const {
     register,
@@ -38,34 +39,64 @@ export const AddBudgetModal = () => {
     },
   });
 
+  // Reset form with editing budget data when modal opens
+  useEffect(() => {
+    if (isOpen && editingBudget) {
+      reset({
+        categoryId: editingBudget.categoryId,
+        amount: editingBudget.amount,
+        period: editingBudget.period,
+        rollover: editingBudget.rollover,
+      });
+    } else if (isOpen && !editingBudget) {
+      reset({
+        categoryId: '',
+        amount: undefined as unknown as number,
+        period: 'monthly',
+        rollover: false,
+      });
+    }
+  }, [isOpen, editingBudget, reset]);
+
   const onSubmit = async (data: BudgetFormData) => {
     if (!currentUserId) return;
     
-    const now = new Date();
-    let startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    if (data.period === 'weekly') {
-      const day = now.getDay();
-      startDate = new Date(now);
-      startDate.setDate(now.getDate() - day);
-    } else if (data.period === 'yearly') {
-      startDate = new Date(now.getFullYear(), 0, 1);
-    }
+    if (isEditing && editingBudget) {
+      // Update existing budget
+      await updateBudget(editingBudget.id, {
+        categoryId: data.categoryId,
+        amount: data.amount,
+        period: data.period,
+        rollover: data.rollover,
+      });
+    } else {
+      // Create new budget
+      const now = new Date();
+      let startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      if (data.period === 'weekly') {
+        const day = now.getDay();
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - day);
+      } else if (data.period === 'yearly') {
+        startDate = new Date(now.getFullYear(), 0, 1);
+      }
 
-    await addBudget({
-      categoryId: data.categoryId,
-      amount: data.amount,
-      period: data.period,
-      startDate,
-      rollover: data.rollover,
-    }, currentUserId);
+      await addBudget({
+        categoryId: data.categoryId,
+        amount: data.amount,
+        period: data.period,
+        startDate,
+        rollover: data.rollover,
+      }, currentUserId);
+    }
     
-    reset();
-    setActiveModal(null);
+    handleClose();
   };
 
   const handleClose = () => {
     reset();
+    setEditingBudget(null);
     setActiveModal(null);
   };
 
@@ -88,7 +119,7 @@ export const AddBudgetModal = () => {
   ];
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Create Budget">
+    <Modal isOpen={isOpen} onClose={handleClose} title={isEditing ? "Edit Budget" : "Create Budget"}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Controller
           name="categoryId"
@@ -128,24 +159,25 @@ export const AddBudgetModal = () => {
           )}
         />
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="rollover"
-            {...register('rollover')}
-            className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-          />
-          <label htmlFor="rollover" className="text-sm text-gray-700 dark:text-gray-300">
-            Rollover unused budget to next period
-          </label>
-        </div>
+        <Controller
+          name="rollover"
+          control={control}
+          render={({ field }) => (
+            <Checkbox
+              id="rollover"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+              label="Rollover unused budget to next period"
+            />
+          )}
+        />
 
         <div className="flex gap-3 pt-4">
           <Button type="button" variant="outline" className="flex-1" onClick={handleClose}>
             Cancel
           </Button>
           <Button type="submit" className="flex-1" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Budget'}
+            {isSubmitting ? (isEditing ? 'Saving...' : 'Creating...') : (isEditing ? 'Save Changes' : 'Create Budget')}
           </Button>
         </div>
       </form>
