@@ -26,14 +26,14 @@ const typeOptions = [
 ];
 
 const colorOptions = [
-  { value: '#3b82f6', label: 'Blue', icon: 'circle' },
-  { value: '#10b981', label: 'Green', icon: 'circle' },
-  { value: '#f59e0b', label: 'Yellow', icon: 'circle' },
-  { value: '#ef4444', label: 'Red', icon: 'circle' },
-  { value: '#8b5cf6', label: 'Purple', icon: 'circle' },
-  { value: '#ec4899', label: 'Pink', icon: 'circle' },
-  { value: '#06b6d4', label: 'Cyan', icon: 'circle' },
-  { value: '#6b7280', label: 'Gray', icon: 'circle' },
+  { value: '#3b82f6', label: 'Blue', color: '#3b82f6' },
+  { value: '#10b981', label: 'Green', color: '#10b981' },
+  { value: '#f59e0b', label: 'Yellow', color: '#f59e0b' },
+  { value: '#ef4444', label: 'Red', color: '#ef4444' },
+  { value: '#8b5cf6', label: 'Purple', color: '#8b5cf6' },
+  { value: '#ec4899', label: 'Pink', color: '#ec4899' },
+  { value: '#06b6d4', label: 'Cyan', color: '#06b6d4' },
+  { value: '#6b7280', label: 'Gray', color: '#6b7280' },
 ];
 
 export const AddAccountModal = () => {

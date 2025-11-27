@@ -1,4 +1,4 @@
-import type { Budget, Transaction } from '@/types';
+import type { Budget, Goal, Transaction } from '@/types';
 import type { UserSettings } from '@/types/user';
 import { defaultUserSettings } from '@/types/user';
 import { create } from 'zustand';
@@ -37,6 +37,10 @@ interface AppState {
   // Editing budget
   editingBudget: Budget | null;
   setEditingBudget: (budget: Budget | null) => void;
+
+  // Editing goal
+  editingGoal: Goal | null;
+  setEditingGoal: (goal: Goal | null) => void;
 
   // Reset store
   resetStore: () => void;
@@ -81,6 +85,10 @@ export const useAppStore = create<AppState>()(
       editingBudget: null,
       setEditingBudget: (budget) => set({ editingBudget: budget }),
 
+      // Editing goal
+      editingGoal: null,
+      setEditingGoal: (goal) => set({ editingGoal: goal }),
+
       // Reset store to initial state
       resetStore: () => set({
         settings: defaultUserSettings,
@@ -91,6 +99,7 @@ export const useAppStore = create<AppState>()(
         activeModal: null,
         editingTransaction: null,
         editingBudget: null,
+        editingGoal: null,
       }),
     }),
     {

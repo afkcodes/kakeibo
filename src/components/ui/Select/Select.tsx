@@ -10,6 +10,7 @@ export interface SelectOption {
   label: string;
   disabled?: boolean;
   icon?: string;
+  color?: string; // For color picker options - renders a colored dot
 }
 
 export interface SelectProps {
@@ -81,7 +82,27 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
               className
             )}
           >
-            <SelectPrimitive.Value placeholder={placeholder} className="text-surface-100" />
+            <SelectPrimitive.Value placeholder={placeholder} className="text-surface-100">
+              {value && (() => {
+                const selectedOption = options.find(opt => opt.value === value);
+                if (selectedOption) {
+                  const IconComponent = selectedOption.icon ? getIcon(selectedOption.icon) : null;
+                  return (
+                    <span className="flex items-center gap-2">
+                      {selectedOption.color && (
+                        <span 
+                          className="w-3 h-3 rounded-full shrink-0" 
+                          style={{ backgroundColor: selectedOption.color }}
+                        />
+                      )}
+                      {IconComponent && <IconComponent className="h-4 w-4 text-surface-400" />}
+                      {selectedOption.label}
+                    </span>
+                  );
+                }
+                return null;
+              })()}
+            </SelectPrimitive.Value>
             <SelectPrimitive.Icon>
               <ChevronDown className="h-4 w-4 text-surface-500 shrink-0" />
             </SelectPrimitive.Icon>
@@ -114,6 +135,12 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
                     >
                       <SelectPrimitive.ItemText className="flex-1">
                         <span className="flex items-center gap-2">
+                          {option.color && (
+                            <span 
+                              className="w-3 h-3 rounded-full shrink-0" 
+                              style={{ backgroundColor: option.color }}
+                            />
+                          )}
                           {IconComponent && <IconComponent className="h-4 w-4 text-surface-400" />}
                           {option.label}
                         </span>

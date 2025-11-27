@@ -67,6 +67,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 'border-danger-500 focus:border-danger-500 focus:ring-danger-500/30',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
+              // Date input specific styling - hide native icons on all browsers
+              type === 'date' && [
+                '[&::-webkit-calendar-picker-indicator]:hidden',
+                '[&::-webkit-inner-spin-button]:hidden',
+                '[&::-webkit-clear-button]:hidden',
+                '[&::-ms-clear]:hidden',
+                '[&::-webkit-datetime-edit]:text-surface-100',
+                '[&::-webkit-datetime-edit-fields-wrapper]:text-surface-100',
+                '[&::-webkit-datetime-edit-text]:text-surface-400',
+                '[&::-webkit-datetime-edit-month-field]:text-surface-100',
+                '[&::-webkit-datetime-edit-day-field]:text-surface-100',
+                '[&::-webkit-datetime-edit-year-field]:text-surface-100',
+                'cursor-pointer',
+                '[appearance:textfield]',
+              ],
               className
             )}
             aria-invalid={error ? 'true' : 'false'}

@@ -3,7 +3,9 @@ import { useAccountsWithBalance } from '@/hooks/useAccounts';
 import { useGoalActions } from '@/hooks/useGoals';
 import { useAppStore } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo } from 'react';
+import { format } from 'date-fns';
+import { Calendar } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -20,21 +22,22 @@ const goalSchema = z.object({
 type GoalFormData = z.infer<typeof goalSchema>;
 
 const colorOptions = [
-  { value: '#3b82f6', label: '🔵 Blue' },
-  { value: '#10b981', label: '🟢 Green' },
-  { value: '#f59e0b', label: '🟡 Yellow' },
-  { value: '#ef4444', label: '🔴 Red' },
-  { value: '#8b5cf6', label: '🟣 Purple' },
-  { value: '#ec4899', label: '💗 Pink' },
-  { value: '#06b6d4', label: '🩵 Cyan' },
+  { value: '#3b82f6', label: 'Blue', color: '#3b82f6' },
+  { value: '#10b981', label: 'Green', color: '#10b981' },
+  { value: '#f59e0b', label: 'Yellow', color: '#f59e0b' },
+  { value: '#ef4444', label: 'Red', color: '#ef4444' },
+  { value: '#8b5cf6', label: 'Purple', color: '#8b5cf6' },
+  { value: '#ec4899', label: 'Pink', color: '#ec4899' },
+  { value: '#06b6d4', label: 'Cyan', color: '#06b6d4' },
 ];
 
 export const AddGoalModal = () => {
-  const { activeModal, setActiveModal, currentUserId } = useAppStore();
+  const { activeModal, setActiveModal, currentUserId, editingGoal, setEditingGoal } = useAppStore();
   const accounts = useAccountsWithBalance();
-  const { addGoal } = useGoalActions();
+  const { addGoal, updateGoal } = useGoalActions();
   
   const isOpen = activeModal === 'add-goal';
+  const isEditing = !!editingGoal;
 
   const {
     register,
@@ -51,25 +54,64 @@ export const AddGoalModal = () => {
     },
   });
 
+  // Reset form with editing goal data when modal opens
+  useEffect(() => {
+    if (isOpen && editingGoal) {
+      reset({
+        name: editingGoal.name,
+        type: editingGoal.type,
+        targetAmount: editingGoal.targetAmount,
+        currentAmount: editingGoal.currentAmount,
+        deadline: editingGoal.deadline ? format(new Date(editingGoal.deadline), 'yyyy-MM-dd') : undefined,
+        accountId: editingGoal.accountId || undefined,
+        color: editingGoal.color || '#3b82f6',
+      });
+    } else if (isOpen && !editingGoal) {
+      reset({
+        name: '',
+        type: 'savings',
+        targetAmount: undefined as unknown as number,
+        currentAmount: 0,
+        deadline: undefined,
+        accountId: undefined,
+        color: '#3b82f6',
+      });
+    }
+  }, [isOpen, editingGoal, reset]);
+
   const onSubmit = async (data: GoalFormData) => {
     if (!currentUserId) return;
 
-    await addGoal({
-      name: data.name,
-      type: data.type,
-      targetAmount: data.targetAmount,
-      currentAmount: data.currentAmount || 0,
-      deadline: data.deadline ? new Date(data.deadline) : undefined,
-      accountId: data.accountId || undefined,
-      color: data.color,
-    }, currentUserId);
+    if (isEditing && editingGoal) {
+      // Update existing goal
+      await updateGoal(editingGoal.id, {
+        name: data.name,
+        type: data.type,
+        targetAmount: data.targetAmount,
+        currentAmount: data.currentAmount || 0,
+        deadline: data.deadline ? new Date(data.deadline) : undefined,
+        accountId: data.accountId || undefined,
+        color: data.color,
+      });
+    } else {
+      // Create new goal
+      await addGoal({
+        name: data.name,
+        type: data.type,
+        targetAmount: data.targetAmount,
+        currentAmount: data.currentAmount || 0,
+        deadline: data.deadline ? new Date(data.deadline) : undefined,
+        accountId: data.accountId || undefined,
+        color: data.color,
+      }, currentUserId);
+    }
     
-    reset();
-    setActiveModal(null);
+    handleClose();
   };
 
   const handleClose = () => {
     reset();
+    setEditingGoal(null);
     setActiveModal(null);
   };
 
@@ -86,7 +128,7 @@ export const AddGoalModal = () => {
   ];
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Create Goal">
+    <Modal isOpen={isOpen} onClose={handleClose} title={isEditing ? "Edit Goal" : "Create Goal"}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label="Goal Name"
@@ -132,6 +174,7 @@ export const AddGoalModal = () => {
         <Input
           label="Deadline (optional)"
           type="date"
+          leftIcon={<Calendar className="w-4 h-4" />}
           {...register('deadline')}
           error={errors.deadline?.message}
         />
@@ -143,9 +186,9 @@ export const AddGoalModal = () => {
             render={({ field }) => (
               <Select
                 label="Link to Account (optional)"
-                options={[{ value: '', label: 'None' }, ...accountOptions]}
-                value={field.value || ''}
-                onValueChange={field.onChange}
+                options={[{ value: '__none__', label: 'None' }, ...accountOptions]}
+                value={field.value || '__none__'}
+                onValueChange={(val) => field.onChange(val === '__none__' ? '' : val)}
                 error={errors.accountId?.message}
               />
             )}
@@ -171,7 +214,7 @@ export const AddGoalModal = () => {
             Cancel
           </Button>
           <Button type="submit" className="flex-1" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Goal'}
+            {isSubmitting ? (isEditing ? 'Saving...' : 'Creating...') : (isEditing ? 'Save Changes' : 'Create Goal')}
           </Button>
         </div>
       </form>

@@ -5,6 +5,7 @@ import { useAppStore } from '@/store';
 import type { TransactionType } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
+import { Calendar } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -292,6 +293,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
         <Input
           label="Date"
           type="date"
+          leftIcon={<Calendar className="w-4 h-4" />}
           error={errors.date?.message}
           {...register('date')}
         />
