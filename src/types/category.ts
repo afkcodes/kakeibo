@@ -40,20 +40,20 @@ export const defaultExpenseCategories: Omit<Category, 'id' | 'userId'>[] = [
   { name: 'Gas', type: 'expense', color: '#f59e0b', icon: 'flame', isDefault: true, order: 9 },
   { name: 'Internet', type: 'expense', color: '#8b5cf6', icon: 'wifi', isDefault: true, order: 10 },
   { name: 'Phone', type: 'expense', color: '#a855f7', icon: 'smartphone', isDefault: true, order: 11 },
-  { name: 'Home Maintenance', type: 'expense', color: '#78716c', icon: 'wrench', isDefault: true, order: 12 },
+  { name: 'Home Maintenance', type: 'expense', color: '#a8a29e', icon: 'wrench', isDefault: true, order: 12 },
   
   // 🚗 Transportation
   { name: 'Fuel', type: 'expense', color: '#dc2626', icon: 'fuel', isDefault: true, order: 13 },
   { name: 'Public Transit', type: 'expense', color: '#2563eb', icon: 'train-front', isDefault: true, order: 14 },
   { name: 'Cab & Rideshare', type: 'expense', color: '#1d4ed8', icon: 'car', isDefault: true, order: 15 },
   { name: 'Parking', type: 'expense', color: '#6366f1', icon: 'square-parking', isDefault: true, order: 16 },
-  { name: 'Car Maintenance', type: 'expense', color: '#71717a', icon: 'car-front', isDefault: true, order: 17 },
-  { name: 'Car Insurance', type: 'expense', color: '#64748b', icon: 'shield', isDefault: true, order: 18 },
+  { name: 'Car Maintenance', type: 'expense', color: '#a1a1aa', icon: 'car-front', isDefault: true, order: 17 },
+  { name: 'Car Insurance', type: 'expense', color: '#94a3b8', icon: 'shield', isDefault: true, order: 18 },
   
   // 🛍️ Shopping
   { name: 'Clothing', type: 'expense', color: '#ec4899', icon: 'shirt', isDefault: true, order: 19 },
   { name: 'Electronics', type: 'expense', color: '#6366f1', icon: 'laptop', isDefault: true, order: 20 },
-  { name: 'Home & Furniture', type: 'expense', color: '#a3a3a3', icon: 'armchair', isDefault: true, order: 21 },
+  { name: 'Home & Furniture', type: 'expense', color: '#d4d4d4', icon: 'armchair', isDefault: true, order: 21 },
   { name: 'Beauty & Personal Care', type: 'expense', color: '#f472b6', icon: 'sparkles', isDefault: true, order: 22 },
   { name: 'Gifts', type: 'expense', color: '#e879f9', icon: 'gift', isDefault: true, order: 23 },
   
@@ -84,9 +84,9 @@ export const defaultExpenseCategories: Omit<Category, 'id' | 'userId'>[] = [
   { name: 'School Supplies', type: 'expense', color: '#818cf8', icon: 'pencil', isDefault: true, order: 41 },
   
   // 💰 Financial
-  { name: 'Bank Fees', type: 'expense', color: '#78716c', icon: 'building-2', isDefault: true, order: 42 },
-  { name: 'Loan Payment', type: 'expense', color: '#57534e', icon: 'landmark', isDefault: true, order: 43 },
-  { name: 'Credit Card Payment', type: 'expense', color: '#44403c', icon: 'credit-card', isDefault: true, order: 44 },
+  { name: 'Bank Fees', type: 'expense', color: '#94a3b8', icon: 'building-2', isDefault: true, order: 42 },
+  { name: 'Loan Payment', type: 'expense', color: '#f97316', icon: 'landmark', isDefault: true, order: 43 },
+  { name: 'Credit Card Payment', type: 'expense', color: '#fb923c', icon: 'credit-card', isDefault: true, order: 44 },
   { name: 'Taxes', type: 'expense', color: '#991b1b', icon: 'receipt', isDefault: true, order: 45 },
   
   // 👶 Family & Kids
@@ -100,7 +100,7 @@ export const defaultExpenseCategories: Omit<Category, 'id' | 'userId'>[] = [
   
   // 🎁 Other
   { name: 'Charity & Donations', type: 'expense', color: '#f43f5e', icon: 'heart-handshake', isDefault: true, order: 51 },
-  { name: 'Miscellaneous', type: 'expense', color: '#64748b', icon: 'more-horizontal', isDefault: true, order: 52 },
+  { name: 'Miscellaneous', type: 'expense', color: '#a1a1aa', icon: 'more-horizontal', isDefault: true, order: 52 },
 ];
 
 // Default income categories - organized for detailed analytics
@@ -113,7 +113,7 @@ export const defaultIncomeCategories: Omit<Category, 'id' | 'userId'>[] = [
   // 💻 Freelance & Business
   { name: 'Freelance', type: 'income', color: '#06b6d4', icon: 'laptop', isDefault: true, order: 4 },
   { name: 'Business Income', type: 'income', color: '#0891b2', icon: 'store', isDefault: true, order: 5 },
-  { name: 'Consulting', type: 'income', color: '#0e7490', icon: 'users', isDefault: true, order: 6 },
+  { name: 'Consulting', type: 'income', color: '#22d3ee', icon: 'users', isDefault: true, order: 6 },
   { name: 'Side Hustle', type: 'income', color: '#14b8a6', icon: 'rocket', isDefault: true, order: 7 },
   
   // 📈 Investments & Passive Income
@@ -129,5 +129,5 @@ export const defaultIncomeCategories: Omit<Category, 'id' | 'userId'>[] = [
   { name: 'Cashback & Rewards', type: 'income', color: '#6366f1', icon: 'badge-percent', isDefault: true, order: 15 },
   { name: 'Tax Refund', type: 'income', color: '#059669', icon: 'receipt', isDefault: true, order: 16 },
   { name: 'Sold Items', type: 'income', color: '#84cc16', icon: 'tag', isDefault: true, order: 17 },
-  { name: 'Other Income', type: 'income', color: '#64748b', icon: 'plus-circle', isDefault: true, order: 18 },
+  { name: 'Other Income', type: 'income', color: '#a1a1aa', icon: 'plus-circle', isDefault: true, order: 18 },
 ];

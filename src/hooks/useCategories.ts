@@ -82,6 +82,13 @@ export const useCategoryActions = () => {
     // Check if categories already exist for this user (after cleanup)
     const existing = await db.categories.where('userId').equals(userId).toArray();
     
+    // Create a map of existing categories by name and type
+    const existingCatMap = new Map<string, Category>();
+    for (const cat of existing) {
+      const key = `${cat.type}-${cat.name.toLowerCase()}`;
+      existingCatMap.set(key, cat);
+    }
+    
     // Create a map of default categories for icon/color updates
     const defaultCatMap = new Map<string, { icon: string; color: string; name: string }>();
     [...defaultExpenseCategories, ...defaultIncomeCategories].forEach(c => {
@@ -117,26 +124,36 @@ export const useCategoryActions = () => {
       }
     }
 
-    if (existing.length > 0) return;
+    // Get the max order from existing categories
+    const maxOrder = existing.length > 0 ? Math.max(...existing.map(c => c.order)) : 0;
+    let newOrder = maxOrder;
 
-    // Create default categories with deterministic IDs
-    const categories: Category[] = [
-      ...defaultExpenseCategories.map((c, i) => ({
-        ...c,
-        id: `${userId}-${c.type}-${c.name.toLowerCase().replace(/\s+/g, '-')}`,
-        userId,
-        order: i + 1,
-      })),
-      ...defaultIncomeCategories.map((c, i) => ({
-        ...c,
-        id: `${userId}-${c.type}-${c.name.toLowerCase().replace(/\s+/g, '-')}`,
-        userId,
-        order: defaultExpenseCategories.length + i + 1,
-      })),
-    ];
+    // Add any missing default categories
+    const missingCategories: Category[] = [];
+    
+    [...defaultExpenseCategories, ...defaultIncomeCategories].forEach((c) => {
+      const key = `${c.type}-${c.name.toLowerCase()}`;
+      if (!existingCatMap.has(key)) {
+        newOrder++;
+        missingCategories.push({
+          ...c,
+          id: `${userId}-${c.type}-${c.name.toLowerCase().replace(/\s+/g, '-')}`,
+          userId,
+          order: newOrder,
+        });
+      }
+    });
 
-    await db.categories.bulkPut(categories);
-    return categories;
+    if (missingCategories.length > 0) {
+      await db.categories.bulkPut(missingCategories);
+    }
+
+    // If there were no existing categories, we just added all defaults
+    if (existing.length === 0) {
+      return missingCategories;
+    }
+
+    return [...existing, ...missingCategories];
   };
 
   return { addCategory, updateCategory, deleteCategory, initializeDefaultCategories };
