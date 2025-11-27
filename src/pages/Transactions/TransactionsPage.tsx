@@ -1,5 +1,6 @@
 import { TransactionCard } from '@/components/features/transactions/TransactionCard';
 import { Button, Modal } from '@/components/ui';
+import { useAccounts } from '@/hooks/useAccounts';
 import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useGoals } from '@/hooks/useGoals';
@@ -18,6 +19,7 @@ export const TransactionsPage = () => {
   const { deleteTransaction } = useTransactionActions();
   const categories = useCategories();
   const goals = useGoals();
+  const accounts = useAccounts();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -190,6 +192,8 @@ export const TransactionsPage = () => {
                   const category = getCategory(transaction.categoryId);
                   const goal = getGoal(transaction.goalId);
                   const isGoalTransaction = transaction.type === 'goal-contribution' || transaction.type === 'goal-withdrawal';
+                  const account = accounts.find(a => a.id === transaction.accountId);
+                  const toAccount = transaction.toAccountId ? accounts.find(a => a.id === transaction.toAccountId) : undefined;
 
                   const handleEditTransaction = () => {
                     setEditingTransaction(transaction);
@@ -214,6 +218,8 @@ export const TransactionsPage = () => {
                         color: category.color,
                       } : undefined}
                       goalName={goal?.name}
+                      accountName={account?.name}
+                      toAccountName={toAccount?.name}
                       formatCurrency={formatCurrency}
                       onEdit={isGoalTransaction ? undefined : handleEditTransaction}
                       onDelete={handleDeleteTransaction}

@@ -1,6 +1,6 @@
 import { CategoryIcon } from '@/components/ui';
 import { cn } from '@/utils/cn';
-import { MoreVertical, Pencil, Target, Trash2 } from 'lucide-react';
+import { ArrowLeftRight, MoreVertical, Pencil, Target, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 export interface TransactionCardProps {
@@ -15,6 +15,8 @@ export interface TransactionCardProps {
     color?: string;
   };
   goalName?: string;
+  accountName?: string;
+  toAccountName?: string;
   formatCurrency: (amount: number) => string;
   formatDate?: (date: string) => string;
   onEdit?: () => void;
@@ -29,6 +31,8 @@ export const TransactionCard = ({
   date,
   category,
   goalName,
+  accountName,
+  toAccountName,
   formatCurrency,
   formatDate,
   onEdit,
@@ -41,6 +45,7 @@ export const TransactionCard = ({
 
   const isExpense = type === 'expense';
   const isIncome = type === 'income';
+  const isTransfer = type === 'transfer';
   const isGoalContribution = type === 'goal-contribution';
   const isGoalWithdrawal = type === 'goal-withdrawal';
   const isGoalTransaction = isGoalContribution || isGoalWithdrawal;
@@ -88,6 +93,7 @@ export const TransactionCard = ({
     if (isIncome) return 'text-success-400';
     if (isGoalContribution) return 'text-primary-400';
     if (isGoalWithdrawal) return 'text-warning-400';
+    if (isTransfer) return 'text-primary-400';
     return 'text-primary-400';
   };
 
@@ -99,17 +105,21 @@ export const TransactionCard = ({
 
   const getIconColor = () => {
     if (isGoalTransaction) return '#5B6EF5'; // Primary color for goals
+    if (isTransfer) return '#8b5cf6'; // Purple for transfers
     return category?.color || '#6b7280';
   };
 
   const getDisplayName = () => {
     if (isGoalTransaction && goalName) return goalName;
+    if (isTransfer && toAccountName) return `To ${toAccountName}`;
     return description || category?.name || 'Transaction';
   };
 
   const getSubtitle = () => {
     if (isGoalContribution) return 'Savings Goal';
     if (isGoalWithdrawal) return 'Goal Withdrawal';
+    if (isTransfer && accountName) return `From ${accountName}`;
+    if (isTransfer) return 'Transfer';
     return category?.name || 'Uncategorized';
   };
 
@@ -120,13 +130,15 @@ export const TransactionCard = ({
         isCompact ? 'p-3 rounded-xl' : 'p-3.5 rounded-xl'
       )}
     >
-      {/* Category/Goal Icon */}
+      {/* Category/Goal/Transfer Icon */}
       <div
         className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 squircle"
         style={{ backgroundColor: getIconColor() + '18' }}
       >
         {isGoalTransaction ? (
           <Target className="w-5 h-5" style={{ color: getIconColor() }} />
+        ) : isTransfer ? (
+          <ArrowLeftRight className="w-5 h-5" style={{ color: getIconColor() }} />
         ) : (
           <CategoryIcon
             icon={category?.icon || 'more-horizontal'}
