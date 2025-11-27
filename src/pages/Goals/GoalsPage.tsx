@@ -1,9 +1,10 @@
+import { ContributeGoalModal } from '@/components/features/goals/ContributeGoalModal';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useGoalActions, useGoalProgress } from '@/hooks/useGoals';
 import { useAppStore } from '@/store';
 import type { Goal } from '@/types';
 import { formatDate } from '@/utils/formatters';
-import { Calendar, CreditCard, MoreVertical, Pencil, PiggyBank, Plus, Target, Trash2, TrendingUp } from 'lucide-react';
+import { CreditCard, MoreVertical, Pencil, PiggyBank, Plus, Target, Trash2, Wallet } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 export const GoalsPage = () => {
@@ -14,6 +15,7 @@ export const GoalsPage = () => {
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
+  const [contributingGoal, setContributingGoal] = useState<Goal | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -73,57 +75,49 @@ export const GoalsPage = () => {
 
       {/* Overview Card */}
       {activeGoals.length > 0 && (
-        <div className="bg-surface-800/40 border border-surface-700/30 rounded-xl squircle p-5 mb-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-surface-800/40 border border-surface-700/30 rounded-xl squircle p-4 mb-5">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-surface-500 text-[13px] font-medium">Total Progress</p>
-              <p className="text-surface-50 text-[28px] font-bold font-amount mt-1">
+              <p className="text-surface-500 text-[12px] font-medium">Total Saved</p>
+              <p className="text-surface-50 text-[22px] font-bold font-amount mt-0.5">
                 {formatCurrency(totalSaved)}
               </p>
-              <p className="text-surface-500 text-[13px]">
+              <p className="text-surface-500 text-[12px]">
                 of {formatCurrency(totalSavingsTarget)} target
               </p>
             </div>
-            <div className="text-right">
-              <div className="text-[24px] font-bold font-amount text-primary-400">
+            <div className="w-16 h-16 rounded-full border-4 border-surface-700/50 flex items-center justify-center relative">
+              <svg className="absolute inset-0 w-full h-full -rotate-90">
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  className="text-primary-500"
+                  strokeDasharray={`${(overallPercentage / 100) * 176} 176`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="text-[15px] font-bold text-primary-400">
                 {overallPercentage.toFixed(0)}%
-              </div>
-              <p className="text-surface-500 text-[13px]">
-                completed
-              </p>
+              </span>
             </div>
           </div>
           
-          {/* Overall Progress */}
-          <div className="h-2.5 bg-surface-700/50 rounded-full overflow-hidden">
-            <div 
-              className="h-full rounded-full transition-all duration-500 bg-primary-500"
-              style={{ width: `${Math.min(overallPercentage, 100)}%` }}
-            />
-          </div>
-          
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-surface-700/50">
-            <div className="text-center">
-              <div className="w-8 h-8 rounded-lg bg-success-500/15 flex items-center justify-center mx-auto mb-1.5">
-                <Target className="w-4 h-4 text-success-400" />
-              </div>
-              <p className="text-surface-50 text-[15px] font-bold">{activeGoals.length}</p>
-              <p className="text-surface-500 text-[11px]">Active</p>
+          {/* Quick Stats Row */}
+          <div className="flex items-center gap-4 pt-3 border-t border-surface-700/50">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-success-400" />
+              <span className="text-[12px] text-surface-400">{activeGoals.length} active</span>
             </div>
-            <div className="text-center">
-              <div className="w-8 h-8 rounded-lg bg-primary-500/15 flex items-center justify-center mx-auto mb-1.5">
-                <TrendingUp className="w-4 h-4 text-primary-400" />
-              </div>
-              <p className="text-surface-50 text-[15px] font-bold font-amount">{formatCurrency(totalSaved)}</p>
-              <p className="text-surface-500 text-[11px]">Saved</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-warning-400" />
+              <span className="text-[12px] text-surface-400">{upcomingGoals.length} upcoming</span>
             </div>
-            <div className="text-center">
-              <div className="w-8 h-8 rounded-lg bg-warning-500/15 flex items-center justify-center mx-auto mb-1.5">
-                <Calendar className="w-4 h-4 text-warning-400" />
-              </div>
-              <p className="text-surface-50 text-[15px] font-bold">{upcomingGoals.length}</p>
-              <p className="text-surface-500 text-[11px]">Upcoming</p>
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-[12px] text-surface-500">{formatCurrency(totalSavingsTarget - totalSaved)} to go</span>
             </div>
           </div>
         </div>
@@ -150,7 +144,7 @@ export const GoalsPage = () => {
       ) : (
         <div className="space-y-2.5">
           {activeGoals.map((gp) => {
-            const { goal, percentage, remaining, daysUntilDeadline } = gp;
+            const { goal, percentage, daysUntilDeadline } = gp;
             const isNearDeadline = daysUntilDeadline !== undefined && daysUntilDeadline < 30;
             const isAlmostDone = percentage >= 80;
 
@@ -173,28 +167,22 @@ export const GoalsPage = () => {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <p className="text-surface-100 text-[14px] font-semibold truncate">
-                        {goal.name}
-                      </p>
-                      <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded-md shrink-0 ${
-                        goal.type === 'savings' 
-                          ? 'bg-success-500/15 text-success-400' 
-                          : 'bg-danger-500/15 text-danger-400'
-                      }`}>
-                        {goal.type === 'savings' ? 'Savings' : 'Debt'}
-                      </span>
-                    </div>
-                    <p className={`font-bold font-amount text-[14px] shrink-0 ml-2 ${
-                      isAlmostDone ? 'text-success-400' : 'text-surface-100'
-                    }`}>
-                      {formatCurrency(goal.currentAmount)} <span className="text-surface-500 font-normal">/ {formatCurrency(goal.targetAmount)}</span>
+                  {/* Title Row */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-surface-100 text-[14px] font-semibold truncate flex-1 min-w-0">
+                      {goal.name}
                     </p>
+                    <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded-md shrink-0 ${
+                      goal.type === 'savings' 
+                        ? 'bg-success-500/15 text-success-400' 
+                        : 'bg-danger-500/15 text-danger-400'
+                    }`}>
+                      {goal.type === 'savings' ? 'Save' : 'Debt'}
+                    </span>
                   </div>
                   
                   {/* Progress Bar */}
-                  <div className="h-1.5 bg-surface-700/50 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-surface-700/50 rounded-full overflow-hidden mb-1.5">
                     <div 
                       className={`h-full rounded-full transition-all duration-300 ${
                         isAlmostDone ? 'bg-success-500' : 'bg-primary-500'
@@ -204,19 +192,21 @@ export const GoalsPage = () => {
                   </div>
                   
                   {/* Footer */}
-                  <div className="flex items-center justify-between mt-1.5">
-                    <span className={`text-[11px] font-medium ${
-                      isAlmostDone ? 'text-success-400' : 'text-surface-400'
-                    }`}>
-                      {percentage.toFixed(0)}% complete • {formatCurrency(remaining)} to go
-                    </span>
-                    {goal.deadline && daysUntilDeadline !== undefined && (
-                      <span className={`text-[11px] font-medium ${
-                        isNearDeadline ? 'text-danger-400' : 'text-surface-400'
-                      }`}>
-                        {isNearDeadline ? `${daysUntilDeadline}d left` : formatDate(goal.deadline, 'MMM dd')}
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-surface-400">
+                      <span className={`font-semibold ${isAlmostDone ? 'text-success-400' : 'text-surface-200'}`}>
+                        {formatCurrency(goal.currentAmount)}
                       </span>
-                    )}
+                      <span className="text-surface-500"> / {formatCurrency(goal.targetAmount)}</span>
+                    </span>
+                    <span className="text-surface-500">
+                      {percentage.toFixed(0)}%
+                      {goal.deadline && daysUntilDeadline !== undefined && (
+                        <span className={isNearDeadline ? 'text-danger-400' : ''}>
+                          {' • '}{isNearDeadline ? `${daysUntilDeadline}d` : formatDate(goal.deadline, 'MMM dd')}
+                        </span>
+                      )}
+                    </span>
                   </div>
                 </div>
 
@@ -265,6 +255,17 @@ export const GoalsPage = () => {
                             className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();
+                              setContributingGoal(goal);
+                              setOpenMenuId(null);
+                            }}
+                          >
+                            <Wallet className="w-4 h-4 text-surface-400" />
+                            Add Money
+                          </button>
+                          <button
+                            className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
                               handleEditGoal(goal);
                             }}
                           >
@@ -292,6 +293,13 @@ export const GoalsPage = () => {
           })}
         </div>
       )}
+
+      {/* Contribute Goal Modal */}
+      <ContributeGoalModal
+        goal={contributingGoal}
+        isOpen={!!contributingGoal}
+        onClose={() => setContributingGoal(null)}
+      />
     </div>
   );
 };
