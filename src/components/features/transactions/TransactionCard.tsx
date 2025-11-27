@@ -127,6 +127,10 @@ export const TransactionCard = ({
 
   const renderSubtitle = () => {
     if (isTransfer) {
+      // Show simple "Transfer" in compact mode (Dashboard), full details in default mode
+      if (isCompact) {
+        return 'Transfer';
+      }
       const from = accountName || 'Account';
       const to = toAccountName || 'Account';
       return (

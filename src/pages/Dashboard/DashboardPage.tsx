@@ -11,16 +11,16 @@ import type { Account, Transaction } from '@/types';
 import { formatRelativeDate } from '@/utils/formatters';
 import { Link } from '@tanstack/react-router';
 import {
-    ArrowDownLeft,
-    ArrowUpRight,
-    ChevronRight,
-    CreditCard,
-    Eye,
-    EyeOff,
-    Settings,
-    Sparkles,
-    Target,
-    Wallet
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronRight,
+  CreditCard,
+  Eye,
+  EyeOff,
+  Settings,
+  Sparkles,
+  Target,
+  Wallet
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
