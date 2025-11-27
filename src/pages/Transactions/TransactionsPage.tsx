@@ -1,13 +1,15 @@
 import { TransactionCard } from '@/components/features/transactions/TransactionCard';
+import { Button, Modal } from '@/components/ui';
 import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useGoals } from '@/hooks/useGoals';
 import { useTransactionActions, useTransactions } from '@/hooks/useTransactions';
 import { useAppStore } from '@/store';
 import type { Transaction, TransactionType } from '@/types';
 import { Receipt, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-type FilterType = 'all' | TransactionType;
+type FilterType = 'all' | TransactionType | 'savings';
 
 export const TransactionsPage = () => {
   const { formatCurrency } = useCurrency();
@@ -15,16 +17,28 @@ export const TransactionsPage = () => {
   const transactions = useTransactions();
   const { deleteTransaction } = useTransactionActions();
   const categories = useCategories();
+  const goals = useGoals();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
 
   // Group transactions by date
   const groupedTransactions = useMemo(() => {
     const filtered = transactions.filter((t) => {
       const matchesSearch = searchQuery === '' || 
         t.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = filterType === 'all' || t.type === filterType;
+      
+      // Handle the 'savings' filter type for goal transactions
+      let matchesType = false;
+      if (filterType === 'all') {
+        matchesType = true;
+      } else if (filterType === 'savings') {
+        matchesType = t.type === 'goal-contribution' || t.type === 'goal-withdrawal';
+      } else {
+        matchesType = t.type === filterType;
+      }
+      
       return matchesSearch && matchesType;
     });
 
@@ -62,7 +76,17 @@ export const TransactionsPage = () => {
     return transactions.filter((t) => {
       const matchesSearch = searchQuery === '' || 
         t.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = filterType === 'all' || t.type === filterType;
+      
+      // Handle the 'savings' filter type for goal transactions
+      let matchesType = false;
+      if (filterType === 'all') {
+        matchesType = true;
+      } else if (filterType === 'savings') {
+        matchesType = t.type === 'goal-contribution' || t.type === 'goal-withdrawal';
+      } else {
+        matchesType = t.type === filterType;
+      }
+      
       return matchesSearch && matchesType;
     }).length;
   }, [transactions, searchQuery, filterType]);
@@ -70,6 +94,11 @@ export const TransactionsPage = () => {
   const getCategory = (categoryId?: string) => {
     if (!categoryId) return null;
     return categories.find(c => c.id === categoryId);
+  };
+
+  const getGoal = (goalId?: string) => {
+    if (!goalId) return null;
+    return goals.find(g => g.id === goalId);
   };
 
   const formatDateHeader = (dateStr: string) => {
@@ -120,17 +149,17 @@ export const TransactionsPage = () => {
 
       {/* Filter Tabs */}
       <div className="flex gap-1 p-1 bg-surface-800/40 rounded-xl squircle mb-5">
-        {(['all', 'expense', 'income'] as const).map((type) => (
+        {(['all', 'expense', 'income', 'savings'] as const).map((type) => (
           <button
             key={type}
-            onClick={() => setFilterType(type)}
+            onClick={() => setFilterType(type as FilterType)}
             className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all ${
               filterType === type
                 ? 'bg-surface-700 text-surface-50 shadow-sm'
                 : 'text-surface-400 hover:text-surface-300'
             }`}
           >
-            {type === 'all' ? 'All' : type === 'expense' ? 'Expenses' : 'Income'}
+            {type === 'all' ? 'All' : type === 'expense' ? 'Expenses' : type === 'income' ? 'Income' : 'Savings'}
           </button>
         ))}
       </div>
@@ -159,6 +188,8 @@ export const TransactionsPage = () => {
               <div className="space-y-2">
                 {group.transactions.map((transaction) => {
                   const category = getCategory(transaction.categoryId);
+                  const goal = getGoal(transaction.goalId);
+                  const isGoalTransaction = transaction.type === 'goal-contribution' || transaction.type === 'goal-withdrawal';
 
                   const handleEditTransaction = () => {
                     setEditingTransaction(transaction);
@@ -166,7 +197,7 @@ export const TransactionsPage = () => {
                   };
 
                   const handleDeleteTransaction = () => {
-                    deleteTransaction(transaction.id);
+                    setTransactionToDelete(transaction);
                   };
 
                   return (
@@ -182,8 +213,9 @@ export const TransactionsPage = () => {
                         icon: category.icon,
                         color: category.color,
                       } : undefined}
+                      goalName={goal?.name}
                       formatCurrency={formatCurrency}
-                      onEdit={handleEditTransaction}
+                      onEdit={isGoalTransaction ? undefined : handleEditTransaction}
                       onDelete={handleDeleteTransaction}
                     />
                   );
@@ -200,6 +232,40 @@ export const TransactionsPage = () => {
           Showing {totalCount} transaction{totalCount !== 1 ? 's' : ''}
         </p>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!transactionToDelete}
+        onClose={() => setTransactionToDelete(null)}
+        title="Delete Transaction"
+      >
+        <div className="space-y-4">
+          <p className="text-surface-300 text-[14px]">
+            Are you sure you want to delete this transaction? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setTransactionToDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              className="flex-1"
+              onClick={() => {
+                if (transactionToDelete) {
+                  deleteTransaction(transactionToDelete.id);
+                  setTransactionToDelete(null);
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

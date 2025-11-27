@@ -1,22 +1,23 @@
 import { CategoryIcon } from '@/components/ui';
 import { cn } from '@/utils/cn';
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { MoreVertical, Pencil, Target, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 export interface TransactionCardProps {
   id: string;
   description: string;
   amount: number;
-  type: 'expense' | 'income' | 'transfer';
+  type: 'expense' | 'income' | 'transfer' | 'goal-contribution' | 'goal-withdrawal';
   date: string;
   category?: {
     name: string;
     icon?: string;
     color?: string;
   };
+  goalName?: string;
   formatCurrency: (amount: number) => string;
   formatDate?: (date: string) => string;
-  onEdit: () => void;
+  onEdit?: () => void;
   onDelete: () => void;
   variant?: 'default' | 'compact';
 }
@@ -27,6 +28,7 @@ export const TransactionCard = ({
   type,
   date,
   category,
+  goalName,
   formatCurrency,
   formatDate,
   onEdit,
@@ -34,12 +36,14 @@ export const TransactionCard = ({
   variant = 'default',
 }: TransactionCardProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const isExpense = type === 'expense';
   const isIncome = type === 'income';
+  const isGoalContribution = type === 'goal-contribution';
+  const isGoalWithdrawal = type === 'goal-withdrawal';
+  const isGoalTransaction = isGoalContribution || isGoalWithdrawal;
   const isCompact = variant === 'compact';
 
   // Close menu when clicking outside
@@ -52,7 +56,6 @@ export const TransactionCard = ({
         !buttonRef.current.contains(event.target as Node)
       ) {
         setMenuOpen(false);
-        setShowDeleteConfirm(false);
       }
     };
 
@@ -65,30 +68,49 @@ export const TransactionCard = ({
   const handleMenuToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     setMenuOpen(!menuOpen);
-    setShowDeleteConfirm(false);
   };
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     setMenuOpen(false);
-    onEdit();
+    onEdit?.();
   };
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowDeleteConfirm(true);
-  };
-
-  const handleDeleteConfirm = (e: React.MouseEvent) => {
+  const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     setMenuOpen(false);
-    setShowDeleteConfirm(false);
     onDelete();
   };
 
-  const handleDeleteCancel = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowDeleteConfirm(false);
+  // Determine display values based on transaction type
+  const getAmountColor = () => {
+    if (isExpense) return 'text-danger-400';
+    if (isIncome) return 'text-success-400';
+    if (isGoalContribution) return 'text-primary-400';
+    if (isGoalWithdrawal) return 'text-warning-400';
+    return 'text-primary-400';
+  };
+
+  const getAmountPrefix = () => {
+    if (isExpense || isGoalContribution) return '−';
+    if (isIncome || isGoalWithdrawal) return '+';
+    return '';
+  };
+
+  const getIconColor = () => {
+    if (isGoalTransaction) return '#5B6EF5'; // Primary color for goals
+    return category?.color || '#6b7280';
+  };
+
+  const getDisplayName = () => {
+    if (isGoalTransaction && goalName) return goalName;
+    return description || category?.name || 'Transaction';
+  };
+
+  const getSubtitle = () => {
+    if (isGoalContribution) return 'Savings Goal';
+    if (isGoalWithdrawal) return 'Goal Withdrawal';
+    return category?.name || 'Uncategorized';
   };
 
   return (
@@ -98,16 +120,20 @@ export const TransactionCard = ({
         isCompact ? 'p-3 rounded-xl' : 'p-3.5 rounded-xl'
       )}
     >
-      {/* Category Icon */}
+      {/* Category/Goal Icon */}
       <div
         className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 squircle"
-        style={{ backgroundColor: (category?.color || '#6b7280') + '18' }}
+        style={{ backgroundColor: getIconColor() + '18' }}
       >
-        <CategoryIcon
-          icon={category?.icon || 'more-horizontal'}
-          color={category?.color}
-          size="sm"
-        />
+        {isGoalTransaction ? (
+          <Target className="w-5 h-5" style={{ color: getIconColor() }} />
+        ) : (
+          <CategoryIcon
+            icon={category?.icon || 'more-horizontal'}
+            color={category?.color}
+            size="sm"
+          />
+        )}
       </div>
 
       {/* Transaction Details */}
@@ -118,23 +144,18 @@ export const TransactionCard = ({
             isCompact ? 'text-[13px]' : 'text-[14px]'
           )}
         >
-          {description || category?.name || 'Transaction'}
+          {getDisplayName()}
         </p>
         <p className={cn('text-surface-500 mt-0.5', isCompact ? 'text-[11px] tracking-wide' : 'text-[12px]')}>
-          {category?.name || 'Uncategorized'}
+          {getSubtitle()}
           {formatDate && ` • ${formatDate(date)}`}
         </p>
       </div>
 
       {/* Amount */}
       <div className="shrink-0 text-right">
-        <p
-          className={cn(
-            'font-bold font-amount text-[15px]',
-            isExpense ? 'text-danger-400' : isIncome ? 'text-success-400' : 'text-primary-400'
-          )}
-        >
-          {isExpense ? '−' : isIncome ? '+' : ''}
+        <p className={cn('font-bold font-amount text-[15px]', getAmountColor())}>
+          {getAmountPrefix()}
           {formatCurrency(Math.abs(amount))}
         </p>
       </div>
@@ -155,7 +176,8 @@ export const TransactionCard = ({
           ref={menuRef}
           className="absolute right-2 top-full mt-1 z-50 bg-surface-800 border border-surface-700 rounded-xl squircle shadow-xl overflow-hidden min-w-[140px] animate-in fade-in-0 zoom-in-95 duration-150"
         >
-          {!showDeleteConfirm ? (
+          {/* Only show Edit for regular transactions, not goal transactions */}
+          {!isGoalTransaction && onEdit && (
             <>
               <button
                 onClick={handleEdit}
@@ -165,33 +187,15 @@ export const TransactionCard = ({
                 <span className="text-[14px] font-medium">Edit</span>
               </button>
               <div className="h-px bg-surface-700" />
-              <button
-                onClick={handleDeleteClick}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left text-danger-400 active:bg-surface-700/50 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span className="text-[14px] font-medium">Delete</span>
-              </button>
             </>
-          ) : (
-            <div className="p-3">
-              <p className="text-surface-300 text-[13px] font-medium mb-3">Delete this transaction?</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleDeleteCancel}
-                  className="flex-1 px-3 py-2 text-[13px] font-medium text-surface-300 bg-surface-700/50 rounded-lg active:bg-surface-600/50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteConfirm}
-                  className="flex-1 px-3 py-2 text-[13px] font-medium text-white bg-danger-500 rounded-lg active:bg-danger-600 transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
           )}
+          <button
+            onClick={handleDelete}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-danger-400 active:bg-surface-700/50 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className="text-[14px] font-medium">Delete</span>
+          </button>
         </div>
       )}
     </div>

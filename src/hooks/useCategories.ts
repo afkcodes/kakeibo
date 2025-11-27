@@ -61,6 +61,24 @@ export const useCategoryActions = () => {
     // First, clean up any duplicate categories
     const allCategories = await db.categories.where('userId').equals(userId).toArray();
     
+    // Remove deprecated category names that have been replaced
+    const deprecatedNames = ['Others', 'Other']; // Replaced by "Miscellaneous" and "Other Income"
+    const deprecatedIds: string[] = [];
+    
+    for (const cat of allCategories) {
+      if (deprecatedNames.includes(cat.name)) {
+        deprecatedIds.push(cat.id);
+      }
+    }
+    
+    if (deprecatedIds.length > 0) {
+      await db.categories.bulkDelete(deprecatedIds);
+      // Refresh the list after deletion
+      const refreshed = await db.categories.where('userId').equals(userId).toArray();
+      allCategories.length = 0;
+      allCategories.push(...refreshed);
+    }
+    
     // Find duplicates by name and type
     const seen = new Map<string, string>();
     const duplicateIds: string[] = [];

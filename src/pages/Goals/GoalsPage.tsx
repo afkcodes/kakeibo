@@ -1,4 +1,6 @@
 import { ContributeGoalModal } from '@/components/features/goals/ContributeGoalModal';
+import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useGoalActions, useGoalProgress } from '@/hooks/useGoals';
 import { useAppStore } from '@/store';
@@ -14,7 +16,7 @@ export const GoalsPage = () => {
   const { deleteGoal } = useGoalActions();
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
+  const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null);
   const [contributingGoal, setContributingGoal] = useState<Goal | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -23,7 +25,6 @@ export const GoalsPage = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenMenuId(null);
-        setDeletingGoalId(null);
       }
     };
 
@@ -39,10 +40,11 @@ export const GoalsPage = () => {
     setOpenMenuId(null);
   };
 
-  const handleDeleteGoal = async (goalId: string) => {
-    await deleteGoal(goalId);
-    setOpenMenuId(null);
-    setDeletingGoalId(null);
+  const handleDeleteGoal = async () => {
+    if (goalToDelete) {
+      await deleteGoal(goalToDelete.id);
+      setGoalToDelete(null);
+    }
   };
 
   const activeGoals = goalProgress.filter(gp => gp.goal.status === 'active');
@@ -217,7 +219,6 @@ export const GoalsPage = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       setOpenMenuId(openMenuId === goal.id ? null : goal.id);
-                      setDeletingGoalId(null);
                     }}
                   >
                     <MoreVertical className="w-5 h-5" />
@@ -225,66 +226,39 @@ export const GoalsPage = () => {
                   
                   {openMenuId === goal.id && (
                     <div className="absolute right-0 top-full mt-1 w-40 bg-surface-800 border border-surface-700 rounded-xl squircle shadow-xl z-50 py-1 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
-                      {deletingGoalId === goal.id ? (
-                        <div className="px-4 py-3">
-                          <p className="text-[13px] text-surface-200 mb-3">Delete this goal?</p>
-                          <div className="flex gap-2">
-                            <button
-                              className="flex-1 px-3 py-1.5 text-[12px] font-medium bg-surface-700 text-surface-300 rounded-lg active:bg-surface-600"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeletingGoalId(null);
-                              }}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              className="flex-1 px-3 py-1.5 text-[12px] font-medium bg-danger-500 text-white rounded-lg active:bg-danger-600"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteGoal(goal.id);
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setContributingGoal(goal);
-                              setOpenMenuId(null);
-                            }}
-                          >
-                            <Wallet className="w-4 h-4 text-surface-400" />
-                            Add Money
-                          </button>
-                          <button
-                            className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditGoal(goal);
-                            }}
-                          >
-                            <Pencil className="w-4 h-4 text-surface-400" />
-                            Edit Goal
-                          </button>
-                          <div className="h-px bg-surface-700 my-1" />
-                          <button
-                            className="w-full px-4 py-2.5 text-left text-sm text-danger-400 active:bg-danger-500/10 flex items-center gap-3 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeletingGoalId(goal.id);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Delete
-                          </button>
-                        </>
-                      )}
+                      <button
+                        className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setContributingGoal(goal);
+                          setOpenMenuId(null);
+                        }}
+                      >
+                        <Wallet className="w-4 h-4 text-surface-400" />
+                        Add Money
+                      </button>
+                      <button
+                        className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditGoal(goal);
+                        }}
+                      >
+                        <Pencil className="w-4 h-4 text-surface-400" />
+                        Edit Goal
+                      </button>
+                      <div className="h-px bg-surface-700 my-1" />
+                      <button
+                        className="w-full px-4 py-2.5 text-left text-sm text-danger-400 active:bg-danger-500/10 flex items-center gap-3 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setGoalToDelete(goal);
+                          setOpenMenuId(null);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
                     </div>
                   )}
                 </div>
@@ -300,6 +274,36 @@ export const GoalsPage = () => {
         isOpen={!!contributingGoal}
         onClose={() => setContributingGoal(null)}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!goalToDelete}
+        onClose={() => setGoalToDelete(null)}
+        title="Delete Goal"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-surface-300 text-[14px]">
+            Are you sure you want to delete <span className="font-semibold text-surface-100">"{goalToDelete?.name}"</span>? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => setGoalToDelete(null)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleDeleteGoal}
+              className="flex-1"
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

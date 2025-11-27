@@ -1,4 +1,4 @@
-export type TransactionType = 'expense' | 'income' | 'transfer';
+export type TransactionType = 'expense' | 'income' | 'transfer' | 'goal-contribution' | 'goal-withdrawal';
 
 export interface Location {
   latitude: number;
@@ -21,6 +21,7 @@ export interface Transaction {
   isRecurring: boolean;
   recurringId?: string;
   toAccountId?: string; // For transfers
+  goalId?: string; // For goal contributions/withdrawals
   synced: boolean;
   createdAt: Date;
   updatedAt: Date;
