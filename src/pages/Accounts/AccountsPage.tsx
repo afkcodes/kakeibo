@@ -4,19 +4,19 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useAppStore } from '@/store';
 import type { Account, AccountType } from '@/types';
 import {
-  AlertTriangle,
-  ArrowDownRight,
-  ArrowLeftRight,
-  ArrowUpRight,
-  Banknote,
-  Building2,
-  CreditCard,
-  MoreVertical,
-  Pencil,
-  Plus,
-  Trash2,
-  TrendingUp,
-  Wallet,
+    AlertTriangle,
+    ArrowDownRight,
+    ArrowLeftRight,
+    ArrowUpRight,
+    Banknote,
+    Building2,
+    CreditCard,
+    MoreVertical,
+    Pencil,
+    Plus,
+    Trash2,
+    TrendingUp,
+    Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -51,22 +51,22 @@ const getAccountTypeLabel = (type: AccountType) => {
 };
 
 const typeOptions = [
-  { value: 'bank', label: '🏦 Bank Account' },
-  { value: 'credit', label: '💳 Credit Card' },
-  { value: 'cash', label: '💵 Cash' },
-  { value: 'investment', label: '📈 Investment' },
-  { value: 'wallet', label: '👛 Digital Wallet' },
+  { value: 'bank', label: 'Bank Account', icon: 'landmark' },
+  { value: 'credit', label: 'Credit Card', icon: 'credit-card' },
+  { value: 'cash', label: 'Cash', icon: 'banknote' },
+  { value: 'investment', label: 'Investment', icon: 'trending-up' },
+  { value: 'wallet', label: 'Digital Wallet', icon: 'wallet' },
 ];
 
 const colorOptions = [
-  { value: '#3b82f6', label: '🔵 Blue' },
-  { value: '#10b981', label: '🟢 Green' },
-  { value: '#f59e0b', label: '🟡 Yellow' },
-  { value: '#ef4444', label: '🔴 Red' },
-  { value: '#8b5cf6', label: '🟣 Purple' },
-  { value: '#ec4899', label: '💗 Pink' },
-  { value: '#06b6d4', label: '🩵 Cyan' },
-  { value: '#6b7280', label: '⚫ Gray' },
+  { value: '#3b82f6', label: 'Blue', icon: 'circle' },
+  { value: '#10b981', label: 'Green', icon: 'circle' },
+  { value: '#f59e0b', label: 'Yellow', icon: 'circle' },
+  { value: '#ef4444', label: 'Red', icon: 'circle' },
+  { value: '#8b5cf6', label: 'Purple', icon: 'circle' },
+  { value: '#ec4899', label: 'Pink', icon: 'circle' },
+  { value: '#06b6d4', label: 'Cyan', icon: 'circle' },
+  { value: '#6b7280', label: 'Gray', icon: 'circle' },
 ];
 
 export const AccountsPage = () => {

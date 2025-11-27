@@ -3,7 +3,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useGoalProgress } from '@/hooks/useGoals';
 import { useAppStore } from '@/store';
 import { formatDate } from '@/utils/formatters';
-import { Calendar, Plus, Target, TrendingUp } from 'lucide-react';
+import { Calendar, CreditCard, PiggyBank, Plus, Target, TrendingUp } from 'lucide-react';
 
 export const GoalsPage = () => {
   const { setActiveModal, currentUserId } = useAppStore();
@@ -132,10 +132,14 @@ export const GoalsPage = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                      style={{ backgroundColor: goal.color + '20' }}
+                      className="w-12 h-12 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: goal.color + '20', color: goal.color }}
                     >
-                      {goal.type === 'savings' ? '💰' : '💳'}
+                      {goal.type === 'savings' ? (
+                        <PiggyBank className="w-6 h-6" />
+                      ) : (
+                        <CreditCard className="w-6 h-6" />
+                      )}
                     </div>
                     <div>
                       <h3 className="font-semibold text-surface-100">

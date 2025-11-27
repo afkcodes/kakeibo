@@ -81,8 +81,8 @@ export const AddGoalModal = () => {
   }, [accounts]);
 
   const typeOptions = [
-    { value: 'savings', label: '💰 Savings Goal' },
-    { value: 'debt', label: '💳 Debt Payoff' },
+    { value: 'savings', label: 'Savings Goal', icon: 'piggy-bank' },
+    { value: 'debt', label: 'Debt Payoff', icon: 'credit-card' },
   ];
 
   return (
