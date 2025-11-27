@@ -96,6 +96,13 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
     // Populate form when editing (wait for accounts/categories to load)
     if (editingTransaction && accounts.length > 0 && categories.length > 0) {
       const txType = editingTransaction.type;
+      
+      // Goal transactions cannot be edited through this modal
+      if (txType === 'goal-contribution' || txType === 'goal-withdrawal') {
+        onClose();
+        return;
+      }
+      
       setActiveType(txType);
       // Use setTimeout to ensure Radix Select components pick up the controlled value
       setTimeout(() => {
