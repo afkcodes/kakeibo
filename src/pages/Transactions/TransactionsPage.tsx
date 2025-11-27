@@ -1,6 +1,6 @@
 import { TransactionCard } from '@/components/features/transactions/TransactionCard';
 import { Button, Modal } from '@/components/ui';
-import { useAccounts } from '@/hooks/useAccounts';
+import { useAccountsWithBalance } from '@/hooks/useAccounts';
 import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useGoals } from '@/hooks/useGoals';
@@ -19,7 +19,7 @@ export const TransactionsPage = () => {
   const { deleteTransaction } = useTransactionActions();
   const categories = useCategories();
   const goals = useGoals();
-  const accounts = useAccounts();
+  const accounts = useAccountsWithBalance(); // Gets all accounts without userId filter
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');

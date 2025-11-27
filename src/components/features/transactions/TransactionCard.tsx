@@ -1,6 +1,6 @@
 import { CategoryIcon } from '@/components/ui';
 import { cn } from '@/utils/cn';
-import { ArrowLeftRight, MoreVertical, Pencil, Target, Trash2 } from 'lucide-react';
+import { ArrowLeftRight, ArrowRight, MoreVertical, Pencil, Target, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 export interface TransactionCardProps {
@@ -111,16 +111,33 @@ export const TransactionCard = ({
 
   const getDisplayName = () => {
     if (isGoalTransaction && goalName) return goalName;
-    if (isTransfer && toAccountName) return `To ${toAccountName}`;
+    if (isTransfer) {
+      // For transfers, show description as title
+      return description || 'Transfer';
+    }
     return description || category?.name || 'Transaction';
   };
 
-  const getSubtitle = () => {
+  const getSubtitle = (): string | null => {
     if (isGoalContribution) return 'Savings Goal';
     if (isGoalWithdrawal) return 'Goal Withdrawal';
-    if (isTransfer && accountName) return `From ${accountName}`;
-    if (isTransfer) return 'Transfer';
+    if (isTransfer) return null; // Handled separately with icon
     return category?.name || 'Uncategorized';
+  };
+
+  const renderSubtitle = () => {
+    if (isTransfer) {
+      const from = accountName || 'Account';
+      const to = toAccountName || 'Account';
+      return (
+        <span className="inline-flex items-center gap-1">
+          {from}
+          <ArrowRight className="w-3 h-3 text-surface-400" />
+          {to}
+        </span>
+      );
+    }
+    return getSubtitle();
   };
 
   return (
@@ -159,7 +176,7 @@ export const TransactionCard = ({
           {getDisplayName()}
         </p>
         <p className={cn('text-surface-500 mt-0.5', isCompact ? 'text-[11px] tracking-wide' : 'text-[12px]')}>
-          {getSubtitle()}
+          {renderSubtitle()}
           {formatDate && ` • ${formatDate(date)}`}
         </p>
       </div>
