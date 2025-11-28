@@ -25,6 +25,10 @@ interface AppState {
   currentUserId: string;
   setCurrentUserId: (userId: string) => void;
 
+  // Dashboard selected account (null = all accounts)
+  selectedDashboardAccountId: string | null;
+  setSelectedDashboardAccountId: (accountId: string | null) => void;
+
   // Loading states
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
@@ -72,6 +76,10 @@ export const useAppStore = create<AppState>()(
       currentUserId: DEFAULT_USER_ID,
       setCurrentUserId: (userId) => set({ currentUserId: userId }),
 
+      // Dashboard selected account
+      selectedDashboardAccountId: null,
+      setSelectedDashboardAccountId: (accountId) => set({ selectedDashboardAccountId: accountId }),
+
       // Loading
       isLoading: false,
       setIsLoading: (loading) => set({ isLoading: loading }),
@@ -98,6 +106,7 @@ export const useAppStore = create<AppState>()(
         sidebarOpen: true,
         theme: 'system',
         currentUserId: DEFAULT_USER_ID,
+        selectedDashboardAccountId: null,
         isLoading: false,
         activeModal: null,
         editingTransaction: null,
@@ -111,6 +120,7 @@ export const useAppStore = create<AppState>()(
         settings: state.settings,
         theme: state.theme,
         currentUserId: state.currentUserId,
+        selectedDashboardAccountId: state.selectedDashboardAccountId,
         sidebarOpen: state.sidebarOpen,
       }),
     }

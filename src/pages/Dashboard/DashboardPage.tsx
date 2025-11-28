@@ -5,48 +5,89 @@ import { useBudgetProgress } from '@/hooks/useBudgets';
 import { useCategories } from '@/hooks/useCategories';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useGoalProgress } from '@/hooks/useGoals';
-import { useTransactionActions, useTransactions, useTransactionStats } from '@/hooks/useTransactions';
+import { useTransactionActions, useTransactions } from '@/hooks/useTransactions';
 import { useAppStore } from '@/store';
 import type { Account, Transaction } from '@/types';
 import { formatRelativeDate } from '@/utils/formatters';
 import { Link } from '@tanstack/react-router';
 import {
-    ArrowDownLeft,
-    ArrowUpRight,
-    ChevronRight,
-    CreditCard,
-    Eye,
-    EyeOff,
-    Settings,
-    Sparkles,
-    Target,
-    Wallet
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronDown,
+  ChevronRight,
+  CreditCard,
+  Eye,
+  EyeOff,
+  Layers,
+  Settings,
+  Sparkles,
+  Target,
+  Wallet
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export const DashboardPage = () => {
-  const { setActiveModal, setEditingTransaction } = useAppStore();
+  const { setActiveModal, setEditingTransaction, selectedDashboardAccountId, setSelectedDashboardAccountId } = useAppStore();
   const { formatCurrency, formatCurrencyCompact } = useCurrency();
   const transactions = useTransactions();
   const { deleteTransaction } = useTransactionActions();
-  const stats = useTransactionStats();
   const accounts = useAccountsWithBalance();
   const budgetProgress = useBudgetProgress();
   const goalProgress = useGoalProgress();
   const categories = useCategories();
   const [showBalance, setShowBalance] = useState(true);
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const accountPickerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate total balance from all accounts
-  const totalBalance = useMemo(() => {
+  // Close account picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (accountPickerRef.current && !accountPickerRef.current.contains(event.target as Node)) {
+        setShowAccountPicker(false);
+      }
+    };
+
+    if (showAccountPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showAccountPicker]);
+
+  // Get selected account or null for all accounts
+  const selectedAccount = useMemo(() => {
+    if (!selectedDashboardAccountId) return null;
+    return accounts.find(a => a.id === selectedDashboardAccountId) || null;
+  }, [accounts, selectedDashboardAccountId]);
+
+  // If selected account was deleted, reset to all accounts
+  useMemo(() => {
+    if (selectedDashboardAccountId && accounts.length > 0 && !selectedAccount) {
+      setSelectedDashboardAccountId(null);
+    }
+  }, [selectedAccount, selectedDashboardAccountId, accounts.length, setSelectedDashboardAccountId]);
+
+  // Calculate balance based on selection
+  const displayBalance = useMemo(() => {
+    if (selectedAccount) {
+      return selectedAccount.balance;
+    }
     return accounts.reduce((sum: number, acc: Account) => sum + acc.balance, 0);
-  }, [accounts]);
+  }, [accounts, selectedAccount]);
 
-  // Get recent transactions (last 5)
+  // Filter transactions by selected account
+  const filteredTransactions = useMemo(() => {
+    if (!selectedAccount) return transactions;
+    return transactions.filter((t: Transaction) => 
+      t.accountId === selectedAccount.id || t.toAccountId === selectedAccount.id
+    );
+  }, [transactions, selectedAccount]);
+
+  // Get recent transactions (last 5) based on selection
   const recentTransactions = useMemo(() => {
-    return [...transactions]
+    return [...filteredTransactions]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5);
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // Handle edit transaction
   const handleEditTransaction = (transaction: Transaction) => {
@@ -59,9 +100,26 @@ export const DashboardPage = () => {
     deleteTransaction(transactionId);
   };
 
-  // Quick stats with safe access
-  const monthlyIncome = stats?.monthlyIncome ?? 0;
-  const monthlyExpenses = stats?.monthlyExpenses ?? 0;
+  // Calculate monthly stats based on filtered transactions
+  const { monthlyIncome, monthlyExpenses } = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const monthlyTransactions = filteredTransactions.filter(
+      (t: Transaction) => new Date(t.date) >= startOfMonth
+    );
+
+    const income = monthlyTransactions
+      .filter((t: Transaction) => t.type === 'income')
+      .reduce((sum: number, t: Transaction) => sum + Math.abs(t.amount), 0);
+
+    const expenses = monthlyTransactions
+      .filter((t: Transaction) => t.type === 'expense')
+      .reduce((sum: number, t: Transaction) => sum + Math.abs(t.amount), 0);
+
+    return { monthlyIncome: income, monthlyExpenses: expenses };
+  }, [filteredTransactions]);
+
   const savings = monthlyIncome - monthlyExpenses;
   const savingsRate = monthlyIncome > 0 ? (savings / monthlyIncome) * 100 : 0;
 
@@ -70,7 +128,7 @@ export const DashboardPage = () => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    const monthlyExpenseTransactions = transactions.filter(
+    const monthlyExpenseTransactions = filteredTransactions.filter(
       (t: Transaction) => t.type === 'expense' && new Date(t.date) >= startOfMonth
     );
 
@@ -94,7 +152,7 @@ export const DashboardPage = () => {
       })
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 4);
-  }, [transactions, categories]);
+  }, [filteredTransactions, categories]);
 
   // Top budgets at risk
   const budgetsAtRisk = useMemo(() => {
@@ -130,7 +188,7 @@ export const DashboardPage = () => {
 
       {/* Hero Balance Card - Credit Card Style (Squircle) */}
       <div 
-        className="relative overflow-hidden p-5 squircle" 
+        className="relative p-5 squircle" 
         style={{ 
           background: 'linear-gradient(135deg, #5B6EF5 0%, #4A5BD9 50%, #3D4FC7 100%)',
           boxShadow: '0 14px 40px -8px rgba(91, 110, 245, 0.5), 0 6px 20px -4px rgba(74, 91, 217, 0.3)',
@@ -138,7 +196,7 @@ export const DashboardPage = () => {
       >
         {/* Curved Lines SVG Pattern */}
         <svg 
-          className="absolute inset-0 w-full h-full" 
+          className="absolute inset-0 w-full h-full overflow-hidden rounded-[20px]" 
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
           viewBox="0 0 400 250"
@@ -156,9 +214,65 @@ export const DashboardPage = () => {
         </svg>
         
         <div className="relative z-10">
-          {/* Top Row - Label & Eye Toggle */}
+          {/* Top Row - Account Picker & Eye Toggle */}
           <div className="flex items-center justify-between mb-1">
-            <span className="text-white/80 text-[13px] font-medium tracking-wide">Total Balance</span>
+            <div className="relative" ref={accountPickerRef}>
+              <button 
+                onClick={() => setShowAccountPicker(!showAccountPicker)}
+                className="flex items-center gap-1.5 text-white/80 text-[13px] font-medium tracking-wide hover:text-white transition-colors"
+              >
+                {selectedAccount ? (
+                  <>
+                    <Wallet className="w-3.5 h-3.5" />
+                    <span>{selectedAccount.name}</span>
+                  </>
+                ) : (
+                  <>
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>All Accounts</span>
+                  </>
+                )}
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAccountPicker ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {/* Account Picker Dropdown */}
+              {showAccountPicker && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white/15 backdrop-blur-xl border border-white/20 rounded-xl shadow-xl z-10 overflow-hidden max-h-64 overflow-y-auto">
+                  <button
+                    onClick={() => {
+                      setSelectedDashboardAccountId(null);
+                      setShowAccountPicker(false);
+                    }}
+                    className={`w-full px-3 py-2.5 text-left text-[13px] flex items-center gap-2 transition-colors ${
+                      !selectedAccount ? 'bg-white/20 text-white' : 'text-white/80 hover:bg-white/10'
+                    }`}
+                  >
+                    <Layers className="w-4 h-4" />
+                    All Accounts
+                  </button>
+                  {accounts.map((account) => (
+                    <button
+                      key={account.id}
+                      onClick={() => {
+                        setSelectedDashboardAccountId(account.id);
+                        setShowAccountPicker(false);
+                      }}
+                      className={`w-full px-3 py-2.5 text-left text-[13px] flex items-center gap-2 transition-colors ${
+                        selectedAccount?.id === account.id ? 'bg-white/20 text-white' : 'text-white/80 hover:bg-white/10'
+                      }`}
+                    >
+                      <div 
+                        className="w-4 h-4 rounded flex items-center justify-center"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                      >
+                        <Wallet className="w-2.5 h-2.5 text-white" />
+                      </div>
+                      <span className="truncate">{account.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button 
               onClick={() => setShowBalance(!showBalance)}
               className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
@@ -174,13 +288,14 @@ export const DashboardPage = () => {
           {/* Balance Amount */}
           <div className="mb-5">
             <h1 className="text-[32px] font-bold text-white font-amount tracking-tight leading-none">
-              {showBalance ? formatCurrencyCompact(totalBalance) : '••••••'}
+              {showBalance ? formatCurrencyCompact(displayBalance) : '••••••'}
             </h1>
-            {accounts.length > 0 && (
-              <p className="text-white/60 text-[12px] mt-1">
-                {accounts.length} account{accounts.length > 1 ? 's' : ''} · November 2025
-              </p>
-            )}
+            <p className="text-white/60 text-[12px] mt-1">
+              {selectedAccount 
+                ? `${selectedAccount.type.charAt(0).toUpperCase() + selectedAccount.type.slice(1)} · November 2025`
+                : `${accounts.length} account${accounts.length > 1 ? 's' : ''} · November 2025`
+              }
+            </p>
           </div>
 
           {/* Income/Expense - Stacked Layout */}
