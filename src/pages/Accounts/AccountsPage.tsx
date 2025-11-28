@@ -4,19 +4,19 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useAppStore } from '@/store';
 import type { Account, AccountType } from '@/types';
 import {
-    AlertTriangle,
-    ArrowDownRight,
-    ArrowLeftRight,
-    ArrowUpRight,
-    Banknote,
-    Building2,
-    CreditCard,
-    MoreVertical,
-    Pencil,
-    Plus,
-    Trash2,
-    TrendingUp,
-    Wallet,
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowLeftRight,
+  ArrowUpRight,
+  Banknote,
+  Building2,
+  CreditCard,
+  MoreVertical,
+  Pencil,
+  Plus,
+  Trash2,
+  TrendingUp,
+  Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -249,16 +249,16 @@ export const AccountsPage = () => {
             </div>
 
             {/* Assets vs Liabilities */}
-            <div className="flex justify-between text-sm">
-              <div className="flex items-center gap-2">
+            <div className="flex justify-between items-center text-[12px]">
+              <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-success-500" />
                 <span className="text-surface-400">Assets</span>
-                <span className="font-mono font-medium text-success-400">
+                <span className="font-amount font-semibold text-success-400">
                   {formatCurrencyCompact(totalAssets)}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-mono font-medium text-danger-400">
+              <div className="flex items-center gap-1.5">
+                <span className="font-amount font-semibold text-danger-400">
                   {formatCurrencyCompact(totalLiabilities)}
                 </span>
                 <span className="text-surface-400">Liabilities</span>
