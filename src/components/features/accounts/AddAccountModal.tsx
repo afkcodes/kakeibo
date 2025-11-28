@@ -60,8 +60,6 @@ export const AddAccountModal = () => {
   });
 
   const onSubmit = async (data: AccountFormData) => {
-    if (!currentUserId) return;
-
     await addAccount({
       name: data.name,
       type: data.type as AccountType,

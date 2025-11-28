@@ -47,10 +47,9 @@ interface AddTransactionModalProps {
 
 export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProps) => {
   const { currentUserId, editingTransaction, setEditingTransaction } = useAppStore();
-  const userId = currentUserId ?? 'default-user';
   
-  const accounts = useAccounts(userId);
-  const categories = useCategories(userId);
+  const accounts = useAccounts(currentUserId);
+  const categories = useCategories(currentUserId);
   const { addTransaction, updateTransaction } = useTransactionActions();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -151,7 +150,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
             date: new Date(data.date),
             toAccountId: data.toAccountId,
           },
-          userId
+          currentUserId
         );
       }
       handleClose();

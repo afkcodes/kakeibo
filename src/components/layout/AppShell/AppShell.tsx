@@ -12,25 +12,14 @@ import { FloatingActionButton } from '../FloatingActionButton';
 import { Navbar } from '../Navbar';
 import { Sidebar } from '../Sidebar';
 
-const DEFAULT_USER_ID = 'default-user';
-
 export const AppShell = () => {
-  const { sidebarOpen, activeModal, setActiveModal, currentUserId, setCurrentUserId } = useAppStore();
+  const { sidebarOpen, activeModal, setActiveModal, currentUserId } = useAppStore();
   const { initializeDefaultCategories } = useCategoryActions();
 
-  // Initialize default user and data on first load
+  // Initialize default categories on first load
   useEffect(() => {
-    const initializeApp = async () => {
-      if (!currentUserId) {
-        setCurrentUserId(DEFAULT_USER_ID);
-      }
-      
-      // Initialize default categories (needed for transactions to work)
-      await initializeDefaultCategories(DEFAULT_USER_ID);
-    };
-
-    initializeApp();
-  }, []);
+    initializeDefaultCategories(currentUserId);
+  }, [currentUserId, initializeDefaultCategories]);
 
   // Apply theme
   useEffect(() => {

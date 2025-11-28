@@ -10,8 +10,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 export const BudgetsPage = () => {
   const { currentUserId, setActiveModal, setEditingBudget } = useAppStore();
   const { formatCurrency } = useCurrency();
-  const budgetProgress = useBudgetProgress(currentUserId ?? undefined);
-  const categories = useCategories(currentUserId ?? undefined);
+  const budgetProgress = useBudgetProgress(currentUserId);
+  const categories = useCategories(currentUserId);
   const { deleteBudget } = useBudgetActions();
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);

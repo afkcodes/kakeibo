@@ -4,6 +4,9 @@ import { defaultUserSettings } from '@/types/user';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+// Default user ID for offline-first single-user mode
+const DEFAULT_USER_ID = 'default-user';
+
 interface AppState {
   // User settings
   settings: UserSettings;
@@ -19,8 +22,8 @@ interface AppState {
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
 
   // Current user ID (for offline-first app)
-  currentUserId: string | null;
-  setCurrentUserId: (userId: string | null) => void;
+  currentUserId: string;
+  setCurrentUserId: (userId: string) => void;
 
   // Loading states
   isLoading: boolean;
@@ -66,7 +69,7 @@ export const useAppStore = create<AppState>()(
       setTheme: (theme) => set({ theme }),
 
       // Current user
-      currentUserId: null,
+      currentUserId: DEFAULT_USER_ID,
       setCurrentUserId: (userId) => set({ currentUserId: userId }),
 
       // Loading
@@ -94,7 +97,7 @@ export const useAppStore = create<AppState>()(
         settings: defaultUserSettings,
         sidebarOpen: true,
         theme: 'system',
-        currentUserId: null,
+        currentUserId: DEFAULT_USER_ID,
         isLoading: false,
         activeModal: null,
         editingTransaction: null,

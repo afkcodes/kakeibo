@@ -80,8 +80,6 @@ export const AddGoalModal = () => {
   }, [isOpen, editingGoal, reset]);
 
   const onSubmit = async (data: GoalFormData) => {
-    if (!currentUserId) return;
-
     if (isEditing && editingGoal) {
       // Update existing goal
       await updateGoal(editingGoal.id, {

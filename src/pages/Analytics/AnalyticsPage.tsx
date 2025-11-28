@@ -23,7 +23,7 @@ type TimeRange = 'week' | 'month' | '3months' | '6months';
 export function AnalyticsPage() {
   const { currentUserId } = useAppStore();
   const transactions = useTransactions();
-  const categories = useCategories(currentUserId ?? undefined);
+  const categories = useCategories(currentUserId);
   const { formatCurrency } = useCurrency();
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
 

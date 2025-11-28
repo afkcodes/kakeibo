@@ -72,8 +72,8 @@ const colorOptions = [
 export const AccountsPage = () => {
   const { currentUserId, setActiveModal } = useAppStore();
   const { formatCurrencyCompact } = useCurrency();
-  const accounts = useAccountsWithBalance(currentUserId ?? undefined);
-  const stats = useAccountStats(currentUserId ?? undefined);
+  const accounts = useAccountsWithBalance(currentUserId);
+  const stats = useAccountStats(currentUserId);
   const { deleteAccount, updateAccount } = useAccountActions();
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);

@@ -67,7 +67,7 @@ export const ContributeGoalModal = ({ goal, isOpen, onClose }: ContributeGoalMod
     e.preventDefault();
     setError('');
     
-    if (!canSubmit || !currentUserId) return;
+    if (!canSubmit) return;
 
     setIsSubmitting(true);
     try {

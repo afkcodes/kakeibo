@@ -59,8 +59,6 @@ export const AddBudgetModal = () => {
   }, [isOpen, editingBudget, reset]);
 
   const onSubmit = async (data: BudgetFormData) => {
-    if (!currentUserId) return;
-    
     if (isEditing && editingBudget) {
       // Update existing budget
       await updateBudget(editingBudget.id, {

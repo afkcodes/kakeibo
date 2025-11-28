@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 export const GoalsPage = () => {
   const { setActiveModal, currentUserId, setEditingGoal } = useAppStore();
   const { formatCurrency } = useCurrency();
-  const goalProgress = useGoalProgress(currentUserId ?? undefined);
+  const goalProgress = useGoalProgress(currentUserId);
   const { deleteGoal } = useGoalActions();
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
