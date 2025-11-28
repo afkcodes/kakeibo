@@ -11,16 +11,16 @@ import type { Account, Transaction } from '@/types';
 import { formatRelativeDate } from '@/utils/formatters';
 import { Link } from '@tanstack/react-router';
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  ChevronRight,
-  CreditCard,
-  Eye,
-  EyeOff,
-  Settings,
-  Sparkles,
-  Target,
-  Wallet
+    ArrowDownLeft,
+    ArrowUpRight,
+    ChevronRight,
+    CreditCard,
+    Eye,
+    EyeOff,
+    Settings,
+    Sparkles,
+    Target,
+    Wallet
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -130,7 +130,7 @@ export const DashboardPage = () => {
 
       {/* Hero Balance Card - Credit Card Style (Squircle) */}
       <div 
-        className="relative overflow-hidden p-6 squircle" 
+        className="relative overflow-hidden p-5 squircle" 
         style={{ 
           background: 'linear-gradient(135deg, #5B6EF5 0%, #4A5BD9 50%, #3D4FC7 100%)',
           boxShadow: '0 14px 40px -8px rgba(91, 110, 245, 0.5), 0 6px 20px -4px rgba(74, 91, 217, 0.3)',
@@ -157,55 +157,55 @@ export const DashboardPage = () => {
         
         <div className="relative z-10">
           {/* Top Row - Label & Eye Toggle */}
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
             <span className="text-white/80 text-[13px] font-medium tracking-wide">Total Balance</span>
             <button 
               onClick={() => setShowBalance(!showBalance)}
-              className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
             >
               {showBalance ? (
-                <Eye className="w-[18px] h-[18px] text-white/80" />
+                <Eye className="w-4 h-4 text-white/80" />
               ) : (
-                <EyeOff className="w-[18px] h-[18px] text-white/80" />
+                <EyeOff className="w-4 h-4 text-white/80" />
               )}
             </button>
           </div>
           
           {/* Balance Amount */}
-          <div className="mb-8">
-            <h1 className="text-[40px] font-bold text-white font-amount tracking-tight leading-none">
+          <div className="mb-5">
+            <h1 className="text-[32px] font-bold text-white font-amount tracking-tight leading-none">
               {showBalance ? formatCurrencyCompact(totalBalance) : '••••••'}
             </h1>
             {accounts.length > 0 && (
-              <p className="text-white/60 text-[13px] mt-2">
+              <p className="text-white/60 text-[12px] mt-1">
                 {accounts.length} account{accounts.length > 1 ? 's' : ''} · November 2025
               </p>
             )}
           </div>
 
-          {/* Income/Expense Row */}
-          <div className="flex gap-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <ArrowDownLeft className="w-5 h-5 text-emerald-300" />
+          {/* Income/Expense - Stacked Layout */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+                  <ArrowDownLeft className="w-4 h-4 text-emerald-300" />
+                </div>
+                <span className="text-white/70 text-[13px]">Income</span>
               </div>
-              <div>
-                <p className="text-white/60 text-[11px] font-medium uppercase tracking-wider">Income</p>
-                <p className="text-white font-semibold font-amount text-[15px]">
-                  {showBalance ? formatCurrencyCompact(monthlyIncome) : '••••'}
-                </p>
-              </div>
+              <span className="text-emerald-300 font-semibold font-amount text-[15px]">
+                {showBalance ? formatCurrencyCompact(monthlyIncome) : '••••'}
+              </span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <ArrowUpRight className="w-5 h-5 text-rose-300" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+                  <ArrowUpRight className="w-4 h-4 text-rose-300" />
+                </div>
+                <span className="text-white/70 text-[13px]">Expenses</span>
               </div>
-              <div>
-                <p className="text-white/60 text-[11px] font-medium uppercase tracking-wider">Expenses</p>
-                <p className="text-white font-semibold font-amount text-[15px]">
-                  {showBalance ? formatCurrencyCompact(monthlyExpenses) : '••••'}
-                </p>
-              </div>
+              <span className="text-rose-300 font-semibold font-amount text-[15px]">
+                {showBalance ? formatCurrencyCompact(monthlyExpenses) : '••••'}
+              </span>
             </div>
           </div>
         </div>
