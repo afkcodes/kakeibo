@@ -111,7 +111,7 @@ export const ContributeGoalModal = ({ goal, isOpen, onClose }: ContributeGoalMod
           </div>
           <div className="h-2 bg-surface-700/50 rounded-full overflow-hidden">
             <div 
-              className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400"
+              className="h-full rounded-full bg-linear-to-r from-primary-500 to-primary-400"
               style={{ width: `${Math.min(percentage, 100)}%` }}
             />
           </div>

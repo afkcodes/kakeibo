@@ -88,8 +88,19 @@ export const GoalsPage = () => {
                 of {formatCurrency(totalSavingsTarget)} target
               </p>
             </div>
-            <div className="w-16 h-16 rounded-full border-4 border-surface-700/50 flex items-center justify-center relative">
-              <svg className="absolute inset-0 w-full h-full -rotate-90">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center relative">
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 64 64">
+                {/* Background circle */}
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  className="text-surface-700/50"
+                />
+                {/* Progress circle */}
                 <circle
                   cx="32"
                   cy="32"
@@ -98,7 +109,7 @@ export const GoalsPage = () => {
                   stroke="currentColor"
                   strokeWidth="4"
                   className="text-primary-500"
-                  strokeDasharray={`${(overallPercentage / 100) * 176} 176`}
+                  strokeDasharray={`${(overallPercentage / 100) * 175.93} 175.93`}
                   strokeLinecap="round"
                 />
               </svg>

@@ -82,7 +82,7 @@ export const useGoalActions = () => {
       amount: amount,
       type: 'goal-contribution',
       categoryId: '', // No category for goal transactions
-      description: `Savings: ${goal.name}`,
+      description: `${goal.name}`,
       date: now,
       tags: ['savings', 'goal'],
       goalId: goalId,
