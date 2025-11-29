@@ -1,4 +1,4 @@
-import { Button, Input, Modal, Select } from '@/components/ui';
+import { Button, Checkbox, Input, Modal, Select } from '@/components/ui';
 import { CategorySelect } from '@/components/ui/CategorySelect/CategorySelect';
 import { useAccounts, useCategories, useTransactionActions } from '@/hooks';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -20,6 +20,7 @@ const transactionSchema = z.object({
   accountId: z.string().min(1, 'Account is required'),
   date: z.string().min(1, 'Date is required'),
   toAccountId: z.string().optional(),
+  isEssential: z.boolean().optional(),
 }).refine((data) => {
   if (data.type !== 'transfer') {
     return data.categoryId && data.categoryId.length > 0;
@@ -90,6 +91,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
       description: '',
       categoryId: '',
       accountId: '',
+      isEssential: false,
     },
   });
 
@@ -103,6 +105,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
         description: '',
         categoryId: '',
         accountId: '',
+        isEssential: false,
       });
       return;
     }
@@ -125,6 +128,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
           accountId: editingTransaction.accountId,
           date: format(new Date(editingTransaction.date), 'yyyy-MM-dd'),
           toAccountId: editingTransaction.toAccountId || '',
+          isEssential: editingTransaction.isEssential || false,
         });
       }, 0);
     }
@@ -148,6 +152,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
           accountId: data.accountId,
           date: new Date(data.date),
           toAccountId: data.toAccountId,
+          isEssential: data.type === 'expense' ? data.isEssential : undefined,
         });
       } else {
         await addTransaction(
@@ -159,6 +164,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
             accountId: data.accountId,
             date: new Date(data.date),
             toAccountId: data.toAccountId,
+            isEssential: data.type === 'expense' ? data.isEssential : undefined,
           },
           currentUserId
         );
@@ -361,6 +367,21 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
             type="date"
             error={errors.date?.message}
             {...register('date')}
+          />
+        )}
+
+        {/* Essential expense checkbox - only for expenses */}
+        {activeType === 'expense' && (
+          <Controller
+            name="isEssential"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                label="Essential expense"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            )}
           />
         )}
       </form>
