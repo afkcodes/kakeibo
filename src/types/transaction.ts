@@ -22,6 +22,7 @@ export interface Transaction {
   recurringId?: string;
   toAccountId?: string; // For transfers
   goalId?: string; // For goal contributions/withdrawals
+  isEssential?: boolean; // For marking essential expenses (needs vs wants)
   synced: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -39,6 +40,7 @@ export interface CreateTransactionInput {
   receipt?: string;
   isRecurring?: boolean;
   toAccountId?: string;
+  isEssential?: boolean;
 }
 
 export interface UpdateTransactionInput extends Partial<CreateTransactionInput> {}

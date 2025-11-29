@@ -1,11 +1,13 @@
-import { Button, Input, Modal, Select } from '@/components/ui';
+import { Button, Checkbox, Input, Modal, Select } from '@/components/ui';
 import { CategorySelect } from '@/components/ui/CategorySelect/CategorySelect';
 import { useAccounts, useCategories, useTransactionActions } from '@/hooks';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useAppStore } from '@/store';
 import type { TransactionType } from '@/types';
+import { cn } from '@/utils/cn';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { Calendar } from 'lucide-react';
+import { ArrowRightLeft, Minus, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -18,8 +20,8 @@ const transactionSchema = z.object({
   accountId: z.string().min(1, 'Account is required'),
   date: z.string().min(1, 'Date is required'),
   toAccountId: z.string().optional(),
+  isEssential: z.boolean().optional(),
 }).refine((data) => {
-  // categoryId is required for expense and income, but not for transfer
   if (data.type !== 'transfer') {
     return data.categoryId && data.categoryId.length > 0;
   }
@@ -28,7 +30,6 @@ const transactionSchema = z.object({
   message: 'Category is required',
   path: ['categoryId'],
 }).refine((data) => {
-  // toAccountId is required for transfers
   if (data.type === 'transfer') {
     return data.toAccountId && data.toAccountId.length > 0;
   }
@@ -45,8 +46,25 @@ interface AddTransactionModalProps {
   onClose: () => void;
 }
 
+const typeConfig: Record<'expense' | 'income' | 'transfer', { icon: typeof Minus; color: string; bg: string; label: string }> = {
+  expense: { icon: Minus, color: 'text-danger-400', bg: 'bg-danger-500', label: 'Expense' },
+  income: { icon: Plus, color: 'text-success-400', bg: 'bg-success-500', label: 'Income' },
+  transfer: { icon: ArrowRightLeft, color: 'text-primary-400', bg: 'bg-primary-500', label: 'Transfer' },
+};
+
+// Currency code to symbol mapping
+const currencySymbols: Record<string, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+  INR: '₹',
+};
+
 export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProps) => {
   const { currentUserId, editingTransaction, setEditingTransaction } = useAppStore();
+  const { currency } = useCurrency();
+  const currencySymbol = currencySymbols[currency] || '$';
   
   const accounts = useAccounts(currentUserId);
   const categories = useCategories(currentUserId);
@@ -73,13 +91,12 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
       description: '',
       categoryId: '',
       accountId: '',
+      isEssential: false,
     },
   });
 
-  // Populate form when editing, reset when modal closes
   useEffect(() => {
     if (!isOpen) {
-      // Reset form when modal closes
       setActiveType('expense');
       reset({
         type: 'expense',
@@ -88,22 +105,20 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
         description: '',
         categoryId: '',
         accountId: '',
+        isEssential: false,
       });
       return;
     }
 
-    // Populate form when editing (wait for accounts/categories to load)
     if (editingTransaction && accounts.length > 0 && categories.length > 0) {
       const txType = editingTransaction.type;
       
-      // Goal transactions cannot be edited through this modal
       if (txType === 'goal-contribution' || txType === 'goal-withdrawal') {
         onClose();
         return;
       }
       
       setActiveType(txType);
-      // Use setTimeout to ensure Radix Select components pick up the controlled value
       setTimeout(() => {
         reset({
           type: txType,
@@ -113,10 +128,11 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
           accountId: editingTransaction.accountId,
           date: format(new Date(editingTransaction.date), 'yyyy-MM-dd'),
           toAccountId: editingTransaction.toAccountId || '',
+          isEssential: editingTransaction.isEssential || false,
         });
       }, 0);
     }
-  }, [isOpen, editingTransaction, reset, accounts.length, categories.length]);
+  }, [isOpen, editingTransaction, reset, accounts.length, categories.length, onClose]);
 
   const filteredCategories = categories.filter(
     (c) => c.type === (activeType === 'transfer' ? 'expense' : activeType)
@@ -128,7 +144,6 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
       const amount = parseFloat(data.amount);
       
       if (isEditing && editingTransaction) {
-        // Update existing transaction
         await updateTransaction(editingTransaction.id, {
           amount: data.type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
           type: data.type,
@@ -137,9 +152,9 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
           accountId: data.accountId,
           date: new Date(data.date),
           toAccountId: data.toAccountId,
+          isEssential: data.type === 'expense' ? data.isEssential : undefined,
         });
       } else {
-        // Add new transaction
         await addTransaction(
           {
             amount: data.type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
@@ -149,6 +164,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
             accountId: data.accountId,
             date: new Date(data.date),
             toAccountId: data.toAccountId,
+            isEssential: data.type === 'expense' ? data.isEssential : undefined,
           },
           currentUserId
         );
@@ -167,6 +183,8 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
     onClose();
   };
 
+  const currentTypeConfig = typeConfig[activeType as 'expense' | 'income' | 'transfer'];
+
   return (
     <Modal
       isOpen={isOpen}
@@ -184,96 +202,117 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
             onClick={handleSubmit(onSubmit)}
             className="flex-1"
           >
-            {isEditing ? 'Save Changes' : 'Add Transaction'}
+            {isEditing ? 'Save' : 'Add'}
           </Button>
         </div>
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Transaction Type Tabs */}
-        <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
-          {(['expense', 'income', 'transfer'] as const).map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => {
-                setActiveType(type);
-                reset({ ...watch(), type });
-              }}
-              className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
-                activeType === type
-                  ? type === 'expense'
-                    ? 'bg-danger-500 text-white'
-                    : type === 'income'
-                      ? 'bg-success-500 text-white'
-                      : 'bg-primary-500 text-white'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </button>
-          ))}
+        {/* Type Selector - Tab style */}
+        <div className="flex bg-surface-800 rounded-lg p-1">
+          {(['expense', 'income', 'transfer'] as const).map((type) => {
+            const config = typeConfig[type];
+            const Icon = config.icon;
+            const isActive = activeType === type;
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => {
+                  setActiveType(type);
+                  reset({ ...watch(), type, categoryId: '' });
+                }}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all',
+                  isActive
+                    ? `${config.bg} text-white`
+                    : 'text-surface-400 hover:text-surface-200'
+                )}
+              >
+                <Icon className="w-4 h-4" />
+                {config.label}
+              </button>
+            );
+          })}
         </div>
 
         <input type="hidden" {...register('type')} value={activeType} />
 
-        {/* Amount */}
-        <Input
-          label="Amount"
-          type="number"
-          step="0.01"
-          min="0"
-          placeholder="0.00"
-          error={errors.amount?.message}
-          {...register('amount')}
-        />
+        {/* Amount - With type color indicator */}
+        <div className={cn(
+          'flex items-center gap-2 px-3 h-11 rounded-xl border transition-colors',
+          activeType === 'expense' && 'border-danger-500/50 bg-danger-500/5',
+          activeType === 'income' && 'border-success-500/50 bg-success-500/5',
+          activeType === 'transfer' && 'border-primary-500/50 bg-primary-500/5',
+        )}>
+          <span className={cn('flex items-center gap-0.5 text-base font-medium', currentTypeConfig.color)}>
+            {activeType === 'expense' && <Minus className="w-4 h-4" />}
+            {activeType === 'income' && <Plus className="w-4 h-4" />}
+            {currencySymbol}
+          </span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="0.00"
+            {...register('amount')}
+            className={cn(
+              'flex-1 bg-transparent text-base font-semibold outline-none h-full',
+              currentTypeConfig.color,
+              'placeholder:text-surface-500 placeholder:font-normal'
+            )}
+          />
+        </div>
+        {errors.amount && (
+          <p className="text-danger-400 text-xs -mt-2">{errors.amount.message}</p>
+        )}
 
-        {/* Description */}
+        {/* Description - Important marker for what the transaction is for */}
         <Input
           label="Description"
-          placeholder="Enter description..."
+          placeholder="What's this for?"
           error={errors.description?.message}
           {...register('description')}
         />
 
-        {/* Account */}
-        <Controller
-          name="accountId"
-          control={control}
-          render={({ field }) => (
-            <Select
-              label="Account"
-              options={accounts.map((a) => ({ value: a.id, label: a.name }))}
-              placeholder="Select account"
-              error={errors.accountId?.message}
-              value={field.value}
-              onValueChange={field.onChange}
+        {/* Category or Transfer Accounts */}
+        {activeType === 'transfer' ? (
+          <div className="flex items-center gap-2">
+            <Controller
+              name="accountId"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="From"
+                  options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+                  placeholder="Account"
+                  error={errors.accountId?.message}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  className="flex-1"
+                />
+              )}
             />
-          )}
-        />
-
-        {/* To Account (for transfers) */}
-        {activeType === 'transfer' && (
-          <Controller
-            name="toAccountId"
-            control={control}
-            render={({ field }) => (
-              <Select
-                label="To Account"
-                options={accounts
-                  .filter((a) => a.id !== watch('accountId'))
-                  .map((a) => ({ value: a.id, label: a.name }))}
-                placeholder="Select destination account"
-                error={errors.toAccountId?.message}
-                value={field.value || ''}
-                onValueChange={field.onChange}
-              />
-            )}
-          />
-        )}
-
-        {/* Category */}
-        {activeType !== 'transfer' && (
+            <ArrowRightLeft className="w-4 h-4 text-surface-500 mt-6 shrink-0" />
+            <Controller
+              name="toAccountId"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="To"
+                  options={accounts
+                    .filter((a) => a.id !== watch('accountId'))
+                    .map((a) => ({ value: a.id, label: a.name }))}
+                  placeholder="Account"
+                  error={errors.toAccountId?.message}
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                  className="flex-1"
+                />
+              )}
+            />
+          </div>
+        ) : (
           <Controller
             name="categoryId"
             control={control}
@@ -286,7 +325,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
                   icon: c.icon,
                   color: c.color,
                 }))}
-                placeholder="Select category"
+                placeholder="Search categories..."
                 error={errors.categoryId?.message}
                 value={field.value}
                 onValueChange={field.onChange}
@@ -295,14 +334,56 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
           />
         )}
 
-        {/* Date */}
-        <Input
-          label="Date"
-          type="date"
-          leftIcon={<Calendar className="w-4 h-4" />}
-          error={errors.date?.message}
-          {...register('date')}
-        />
+        {/* Account & Date - Side by side for non-transfers */}
+        {activeType !== 'transfer' && (
+          <div className="grid grid-cols-2 gap-3">
+            <Controller
+              name="accountId"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Account"
+                  options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+                  placeholder="Select"
+                  error={errors.accountId?.message}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                />
+              )}
+            />
+            <Input
+              label="Date"
+              type="date"
+              error={errors.date?.message}
+              {...register('date')}
+            />
+          </div>
+        )}
+
+        {/* Date for transfers */}
+        {activeType === 'transfer' && (
+          <Input
+            label="Date"
+            type="date"
+            error={errors.date?.message}
+            {...register('date')}
+          />
+        )}
+
+        {/* Essential expense checkbox - only for expenses */}
+        {activeType === 'expense' && (
+          <Controller
+            name="isEssential"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                label="Essential expense"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            )}
+          />
+        )}
       </form>
     </Modal>
   );

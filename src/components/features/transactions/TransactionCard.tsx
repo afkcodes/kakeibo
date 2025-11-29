@@ -1,6 +1,6 @@
 import { CategoryIcon } from '@/components/ui';
 import { cn } from '@/utils/cn';
-import { ArrowLeftRight, ArrowRight, MoreVertical, Pencil, Target, Trash2 } from 'lucide-react';
+import { ArrowLeftRight, ArrowRight, MoreVertical, Pencil, ShieldCheck, Target, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 export interface TransactionCardProps {
@@ -17,6 +17,7 @@ export interface TransactionCardProps {
   goalName?: string;
   accountName?: string;
   toAccountName?: string;
+  isEssential?: boolean;
   formatCurrency: (amount: number) => string;
   formatDate?: (date: string) => string;
   onEdit?: () => void;
@@ -33,6 +34,7 @@ export const TransactionCard = ({
   goalName,
   accountName,
   toAccountName,
+  isEssential,
   formatCurrency,
   formatDate,
   onEdit,
@@ -179,9 +181,14 @@ export const TransactionCard = ({
         >
           {getDisplayName()}
         </p>
-        <p className={cn('text-surface-500 mt-0.5', isCompact ? 'text-[11px] tracking-wide' : 'text-[12px]')}>
-          {renderSubtitle()}
-          {formatDate && ` • ${formatDate(date)}`}
+        <p className={cn('text-surface-500 mt-0.5 flex items-center gap-1 truncate', isCompact ? 'text-[11px] tracking-wide' : 'text-[12px]')}>
+          <span className="truncate">{renderSubtitle()}</span>
+          {formatDate && <span className="shrink-0"> • {formatDate(date)}</span>}
+          {isEssential && isExpense && (
+            <span className="inline-flex items-center shrink-0 text-primary-400" title="Essential expense">
+              <ShieldCheck className="w-3 h-3" />
+            </span>
+          )}
         </p>
       </div>
 

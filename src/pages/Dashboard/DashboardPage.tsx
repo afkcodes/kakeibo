@@ -582,6 +582,7 @@ export const DashboardPage = () => {
                     icon: category.icon,
                     color: category.color,
                   } : undefined}
+                  isEssential={transaction.isEssential}
                   formatCurrency={formatCurrency}
                   formatDate={formatRelativeDate}
                   onEdit={() => handleEditTransaction(transaction)}

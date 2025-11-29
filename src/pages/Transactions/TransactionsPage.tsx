@@ -220,6 +220,7 @@ export const TransactionsPage = () => {
                       goalName={goal?.name}
                       accountName={account?.name}
                       toAccountName={toAccount?.name}
+                      isEssential={transaction.isEssential}
                       formatCurrency={formatCurrency}
                       onEdit={isGoalTransaction ? undefined : handleEditTransaction}
                       onDelete={handleDeleteTransaction}
