@@ -107,8 +107,8 @@ export const useCategoryActions = () => {
       existingCatMap.set(key, cat);
     }
     
-    // Create a map of default categories for icon/color updates
-    const defaultCatMap = new Map<string, { icon: string; color: string; name: string }>();
+    // Create a map of default categories for icon/color/order updates
+    const defaultCatMap = new Map<string, { icon: string; color: string; name: string; order: number }>();
     [...defaultExpenseCategories, ...defaultIncomeCategories].forEach(c => {
       // Map by old names too for migration
       const oldNames: Record<string, string> = {
@@ -120,44 +120,40 @@ export const useCategoryActions = () => {
         'personal': 'personal care',
         'rental': 'rental income',
       };
-      defaultCatMap.set(`${c.type}-${c.name.toLowerCase()}`, { icon: c.icon, color: c.color, name: c.name });
+      defaultCatMap.set(`${c.type}-${c.name.toLowerCase()}`, { icon: c.icon, color: c.color, name: c.name, order: c.order });
       // Also add old name mappings
       const newNameLower = c.name.toLowerCase();
       if (oldNames[newNameLower]) {
-        defaultCatMap.set(`${c.type}-${oldNames[newNameLower]}`, { icon: c.icon, color: c.color, name: c.name });
+        defaultCatMap.set(`${c.type}-${oldNames[newNameLower]}`, { icon: c.icon, color: c.color, name: c.name, order: c.order });
       }
     });
 
-    // Update existing categories with correct icons/colors
+    // Update existing categories with correct icons/colors/order
     for (const cat of existing) {
       const key = `${cat.type}-${cat.name.toLowerCase()}`;
       const defaultCat = defaultCatMap.get(key);
       if (defaultCat && cat.isDefault) {
-        // Update icon and color to match defaults, also update name if it changed
+        // Update icon, color, and order to match defaults, also update name if it changed
         await db.categories.update(cat.id, { 
           icon: defaultCat.icon, 
           color: defaultCat.color,
-          name: defaultCat.name 
+          name: defaultCat.name,
+          order: defaultCat.order,
         });
       }
     }
 
-    // Get the max order from existing categories
-    const maxOrder = existing.length > 0 ? Math.max(...existing.map(c => c.order)) : 0;
-    let newOrder = maxOrder;
-
-    // Add any missing default categories
+    // Add any missing default categories with their correct order from defaults
     const missingCategories: Category[] = [];
     
     [...defaultExpenseCategories, ...defaultIncomeCategories].forEach((c) => {
       const key = `${c.type}-${c.name.toLowerCase()}`;
       if (!existingCatMap.has(key)) {
-        newOrder++;
         missingCategories.push({
           ...c,
           id: `${userId}-${c.type}-${c.name.toLowerCase().replace(/\s+/g, '-')}`,
           userId,
-          order: newOrder,
+          order: c.order, // Use the order from defaults
         });
       }
     });

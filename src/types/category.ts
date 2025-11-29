@@ -92,15 +92,16 @@ export const defaultExpenseCategories: Omit<Category, 'id' | 'userId'>[] = [
   // 👶 Family & Kids
   { name: 'Childcare', type: 'expense', color: '#f472b6', icon: 'baby', isDefault: true, order: 46 },
   { name: 'Kids Activities', type: 'expense', color: '#fb7185', icon: 'blocks', isDefault: true, order: 47 },
-  { name: 'Pet Care', type: 'expense', color: '#fbbf24', icon: 'paw-print', isDefault: true, order: 48 },
+  { name: 'Family Support', type: 'expense', color: '#e11d48', icon: 'users', isDefault: true, order: 48 },
+  { name: 'Pet Care', type: 'expense', color: '#fbbf24', icon: 'paw-print', isDefault: true, order: 49 },
   
   // 🔧 Subscriptions & Services
-  { name: 'Subscriptions', type: 'expense', color: '#a855f7', icon: 'repeat', isDefault: true, order: 49 },
-  { name: 'Software & Apps', type: 'expense', color: '#c084fc', icon: 'app-window', isDefault: true, order: 50 },
+  { name: 'Subscriptions', type: 'expense', color: '#a855f7', icon: 'repeat', isDefault: true, order: 50 },
+  { name: 'Software & Apps', type: 'expense', color: '#c084fc', icon: 'app-window', isDefault: true, order: 51 },
   
   // 🎁 Other
-  { name: 'Charity & Donations', type: 'expense', color: '#f43f5e', icon: 'heart-handshake', isDefault: true, order: 51 },
-  { name: 'Miscellaneous', type: 'expense', color: '#a1a1aa', icon: 'more-horizontal', isDefault: true, order: 52 },
+  { name: 'Charity & Donations', type: 'expense', color: '#f43f5e', icon: 'heart-handshake', isDefault: true, order: 52 },
+  { name: 'Miscellaneous', type: 'expense', color: '#a1a1aa', icon: 'more-horizontal', isDefault: true, order: 53 },
 ];
 
 // Default income categories - organized for detailed analytics
