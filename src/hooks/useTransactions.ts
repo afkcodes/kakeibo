@@ -80,32 +80,137 @@ export const useTransactionActions = () => {
   };
 
   const updateTransaction = async (id: string, updates: Partial<CreateTransactionInput>) => {
-    await db.transactions.update(id, {
-      ...updates,
-      updatedAt: new Date(),
+    const now = new Date();
+    const oldTransaction = await db.transactions.get(id);
+    
+    if (!oldTransaction) {
+      throw new Error('Transaction not found');
+    }
+
+    // Use a database transaction to ensure atomicity
+    await db.transaction('rw', [db.transactions, db.accounts], async () => {
+      // Step 1: Revert the OLD transaction's effect on account balances
+      const oldSourceAccount = await db.accounts.get(oldTransaction.accountId);
+      
+      if (oldSourceAccount) {
+        if (oldTransaction.type === 'expense') {
+          // Old expense: add back the amount (expense was negative)
+          await db.accounts.update(oldTransaction.accountId, {
+            balance: oldSourceAccount.balance + Math.abs(oldTransaction.amount),
+            updatedAt: now,
+          });
+        } else if (oldTransaction.type === 'income') {
+          // Old income: subtract the amount
+          await db.accounts.update(oldTransaction.accountId, {
+            balance: oldSourceAccount.balance - Math.abs(oldTransaction.amount),
+            updatedAt: now,
+          });
+        } else if (oldTransaction.type === 'transfer' && oldTransaction.toAccountId) {
+          // Old transfer: add back to source, subtract from destination
+          await db.accounts.update(oldTransaction.accountId, {
+            balance: oldSourceAccount.balance + Math.abs(oldTransaction.amount),
+            updatedAt: now,
+          });
+          
+          const oldDestAccount = await db.accounts.get(oldTransaction.toAccountId);
+          if (oldDestAccount) {
+            await db.accounts.update(oldTransaction.toAccountId, {
+              balance: oldDestAccount.balance - Math.abs(oldTransaction.amount),
+              updatedAt: now,
+            });
+          }
+        }
+      }
+
+      // Step 2: Apply the NEW transaction's effect on account balances
+      const newAccountId = updates.accountId ?? oldTransaction.accountId;
+      const newAmount = updates.amount ?? oldTransaction.amount;
+      const newType = updates.type ?? oldTransaction.type;
+      const newToAccountId = updates.toAccountId ?? oldTransaction.toAccountId;
+      
+      // Re-fetch account after potential changes above
+      const newSourceAccount = await db.accounts.get(newAccountId);
+      
+      if (newSourceAccount) {
+        if (newType === 'expense') {
+          // New expense: subtract the amount
+          await db.accounts.update(newAccountId, {
+            balance: newSourceAccount.balance - Math.abs(newAmount),
+            updatedAt: now,
+          });
+        } else if (newType === 'income') {
+          // New income: add the amount
+          await db.accounts.update(newAccountId, {
+            balance: newSourceAccount.balance + Math.abs(newAmount),
+            updatedAt: now,
+          });
+        } else if (newType === 'transfer' && newToAccountId) {
+          // New transfer: subtract from source, add to destination
+          await db.accounts.update(newAccountId, {
+            balance: newSourceAccount.balance - Math.abs(newAmount),
+            updatedAt: now,
+          });
+          
+          const newDestAccount = await db.accounts.get(newToAccountId);
+          if (newDestAccount) {
+            await db.accounts.update(newToAccountId, {
+              balance: newDestAccount.balance + Math.abs(newAmount),
+              updatedAt: now,
+            });
+          }
+        }
+      }
+
+      // Step 3: Update the transaction record
+      await db.transactions.update(id, {
+        ...updates,
+        updatedAt: now,
+      });
     });
   };
 
   const deleteTransaction = async (id: string) => {
     const transaction = await db.transactions.get(id);
     if (transaction) {
-      // Revert account balance
-      const account = await db.accounts.get(transaction.accountId);
-      if (account) {
-        let balanceRevert = transaction.amount;
-        if (transaction.type === 'expense') {
-          balanceRevert = Math.abs(transaction.amount);
-        } else if (transaction.type === 'income') {
-          balanceRevert = -Math.abs(transaction.amount);
+      const now = new Date();
+      
+      // Use a database transaction to ensure atomicity
+      await db.transaction('rw', [db.transactions, db.accounts], async () => {
+        // Revert account balance
+        const account = await db.accounts.get(transaction.accountId);
+        
+        if (account) {
+          if (transaction.type === 'expense') {
+            // Expense was negative, so add back the amount
+            await db.accounts.update(transaction.accountId, {
+              balance: account.balance + Math.abs(transaction.amount),
+              updatedAt: now,
+            });
+          } else if (transaction.type === 'income') {
+            // Income was positive, so subtract the amount
+            await db.accounts.update(transaction.accountId, {
+              balance: account.balance - Math.abs(transaction.amount),
+              updatedAt: now,
+            });
+          } else if (transaction.type === 'transfer' && transaction.toAccountId) {
+            // Transfer: add back to source, subtract from destination
+            await db.accounts.update(transaction.accountId, {
+              balance: account.balance + Math.abs(transaction.amount),
+              updatedAt: now,
+            });
+            
+            const destAccount = await db.accounts.get(transaction.toAccountId);
+            if (destAccount) {
+              await db.accounts.update(transaction.toAccountId, {
+                balance: destAccount.balance - Math.abs(transaction.amount),
+                updatedAt: now,
+              });
+            }
+          }
         }
 
-        await db.accounts.update(transaction.accountId, {
-          balance: account.balance + balanceRevert,
-          updatedAt: new Date(),
-        });
-      }
-
-      await db.transactions.delete(id);
+        await db.transactions.delete(id);
+      });
     }
   };
 
