@@ -22,6 +22,8 @@ import {
   Settings,
   Sparkles,
   Target,
+  TrendingDown,
+  TrendingUp,
   Wallet
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -326,23 +328,63 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Savings Rate - Compact */}
+      {/* Savings Meter - Container as Gradient Progress */}
       {monthlyIncome > 0 && (
-        <div className="bg-surface-800/50 border border-surface-700/50 rounded-xl squircle p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-surface-300 text-[13px] font-medium">This month's savings</span>
-            <span className={`text-[15px] font-bold font-amount ${savings >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
-              {savings >= 0 ? '+' : ''}{formatCurrencyCompact(savings)}
-            </span>
+        <div 
+          className="relative overflow-hidden rounded-xl squircle h-20 transition-all duration-700 ease-out"
+          style={{ 
+            background: `linear-gradient(90deg, 
+              rgba(244, 63, 94, 0.25) 0%, 
+              rgba(244, 63, 94, 0.15) ${Math.min((monthlyExpenses / monthlyIncome) * 100, 100) * 0.8}%, 
+              rgba(100, 100, 120, 0.1) ${Math.min((monthlyExpenses / monthlyIncome) * 100, 100)}%, 
+              rgba(16, 185, 129, 0.15) ${Math.min((monthlyExpenses / monthlyIncome) * 100, 100) + (savingsRate * 0.2)}%, 
+              rgba(16, 185, 129, 0.25) 100%)`
+          }}
+        >
+          
+          {/* Content overlay */}
+          <div className="relative z-10 h-full px-4 py-3 flex items-center justify-between">
+            {/* Spent side */}
+            <div className="flex-1">
+              <p className="text-danger-400 text-[11px] font-medium uppercase tracking-wider mb-0.5">Spent</p>
+              <p className="text-surface-100 text-[18px] font-bold font-amount">
+                {showBalance ? formatCurrencyCompact(monthlyExpenses) : '••••'}
+              </p>
+              <p className="text-danger-400/70 text-[11px]">
+                {((monthlyExpenses / monthlyIncome) * 100).toFixed(0)}% of income
+              </p>
+            </div>
+            
+            {/* Center badge */}
+            <div className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+              savings >= 0 
+                ? 'bg-success-500/20 text-success-400' 
+                : 'bg-danger-500/20 text-danger-400'
+            }`}>
+              {savings >= 0 ? (
+                <span className="flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" />
+                  {savingsRate.toFixed(0)}%
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <TrendingDown className="w-3 h-3" />
+                  Over
+                </span>
+              )}
+            </div>
+            
+            {/* Saved side */}
+            <div className="flex-1 text-right">
+              <p className="text-success-400 text-[11px] font-medium uppercase tracking-wider mb-0.5">Saved</p>
+              <p className="text-surface-100 text-[18px] font-bold font-amount">
+                {showBalance ? formatCurrencyCompact(Math.max(savings, 0)) : '••••'}
+              </p>
+              <p className="text-success-400/70 text-[11px]">
+                {savingsRate.toFixed(0)}% of income
+              </p>
+            </div>
           </div>
-          <ProgressBar 
-            value={Math.min(Math.max(savingsRate, 0), 100)} 
-            variant={savingsRate >= 20 ? 'success' : savingsRate >= 10 ? 'warning' : 'danger'}
-            size="sm"
-          />
-          <p className="text-surface-500 text-[12px] mt-2.5 tracking-wide">
-            {savingsRate >= 0 ? `${savingsRate.toFixed(0)}% of income saved` : 'Spending more than earning'}
-          </p>
         </div>
       )}
 
