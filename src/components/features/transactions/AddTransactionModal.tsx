@@ -377,7 +377,7 @@ export const AddTransactionModal = ({ isOpen, onClose }: AddTransactionModalProp
             control={control}
             render={({ field }) => (
               <Checkbox
-                label="Essential expense"
+                label="Essential Expense"
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />
